@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: amazonas_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
