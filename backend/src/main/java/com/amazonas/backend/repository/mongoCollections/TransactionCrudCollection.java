@@ -1,9 +1,9 @@
 package com.amazonas.backend.repository.mongoCollections;
 
 import com.amazonas.common.dtos.Transaction;
-import com.amazonas.backend.repository.abstracts.MongoCollection;
+import com.amazonas.backend.repository.abstracts.CrudCollection;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TransactionMongoCollection extends MongoCollection<Transaction> {
+public interface TransactionCrudCollection extends CrudCollection<Transaction> {
 }

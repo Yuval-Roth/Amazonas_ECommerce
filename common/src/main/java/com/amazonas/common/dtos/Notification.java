@@ -1,9 +1,14 @@
 package com.amazonas.common.dtos;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
 public class Notification {
+    @Id
     private final String notificationId;
     private final String title;
     private final String message;
@@ -19,6 +24,15 @@ public class Notification {
         this.timestamp = timestamp;
         this.senderId = senderId;
         this.receiverId = receiverId;
+    }
+
+    public Notification() {
+        this.notificationId = null;
+        this.title = null;
+        this.message = null;
+        this.timestamp = null;
+        this.senderId = null;
+        this.receiverId = null;
     }
 
     public String notificationId() {

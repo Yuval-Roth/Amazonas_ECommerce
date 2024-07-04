@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.UserCredentialsMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.UserCredentialsCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ public class UserCredentialsRepository extends AbstractCachingRepository<UserCre
 
     private final ReadWriteLock permissionsProfileLock;
 
-    public UserCredentialsRepository(UserCredentialsMongoCollection repo) {
+    public UserCredentialsRepository(UserCredentialsCrudCollection repo) {
         super(repo);
         userIdToHashedPassword = new HashMap<>();
         permissionsProfileLock = new ReadWriteLock();

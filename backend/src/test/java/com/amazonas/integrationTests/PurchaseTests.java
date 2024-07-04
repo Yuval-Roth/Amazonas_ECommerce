@@ -17,7 +17,7 @@ import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
-import com.amazonas.backend.repository.mongoCollections.TransactionMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.TransactionCrudCollection;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +80,7 @@ public class PurchaseTests {
         appointmentSystem = mock(AppointmentSystem.class);
         pendingReservationMonitor = mock(PendingReservationMonitor.class);
         permissionsController = mock(PermissionsController.class);
-        transactionRepository = spy(new TransactionRepository(mock(TransactionMongoCollection.class)){
+        transactionRepository = spy(new TransactionRepository(mock(TransactionCrudCollection.class)){
             @Override
             public void addNewTransaction(Transaction t) {
                 transaction = t;

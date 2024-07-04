@@ -1,7 +1,7 @@
 package com.amazonas.backend.repository;
 
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.abstracts.MongoCollection;
+import com.amazonas.backend.repository.abstracts.CrudCollection;
 import com.amazonas.common.dtos.Notification;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class NotificationRepository extends AbstractCachingRepository<Notificati
     private final Map<String,Notification> notifications;//TODO: remove this when we have a real database
     private final Map<String, List<Notification>> receiverIdToNotifications;
 
-    public NotificationRepository(MongoCollection<Notification> repo) {
+    public NotificationRepository(CrudCollection<Notification> repo) {
         super(repo);
         notifications = new HashMap<>();
         receiverIdToNotifications = new HashMap<>();

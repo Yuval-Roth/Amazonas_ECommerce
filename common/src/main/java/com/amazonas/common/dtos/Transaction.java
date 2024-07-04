@@ -1,18 +1,25 @@
 package com.amazonas.common.dtos;
 
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@Entity
 public final class Transaction {
+
+    @Id
     private final String transactionId;
     private final String storeId;
     private final String userId;
     private final LocalDateTime dateOfTransaction;
+    @ElementCollection
     private final Map<Product, Integer> productToQuantity;
-
     private TransactionState state;
 
     public Transaction(String transactionId,
@@ -29,6 +36,15 @@ public final class Transaction {
         }});
 
         this.state = TransactionState.PENDING_SHIPMENT;
+    }
+
+    public Transaction() {
+        this.transactionId = null;
+        this.storeId = null;
+        this.userId = null;
+        this.dateOfTransaction = null;
+        this.productToQuantity = null;
+        this.state = null;
     }
 
     public void setShipped() {

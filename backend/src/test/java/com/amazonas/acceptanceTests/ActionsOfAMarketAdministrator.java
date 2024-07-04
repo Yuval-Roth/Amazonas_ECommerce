@@ -33,11 +33,11 @@ public class ActionsOfAMarketAdministrator {
     private UsersController usersController;
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCartFactory shoppingCartFactory;
-    private ShoppingCartMongoCollection shoppingCartMongo;
+    private ShoppingCartCrudCollection shoppingCartMongo;
     private StoreBasketFactory storeBasketFactory;
-    private UserMongoCollection userMongo;
-    private TransactionMongoCollection transMongo;
-    private ProductMongoCollection productMongo;
+    private UserCrudCollection userMongo;
+    private TransactionCrudCollection transMongo;
+    private ProductCrudCollection productMongo;
     private UserCredentialsRepository userCredentialsRepository;
     private Rating rating;
     private ProductInventory productInventory;
@@ -52,7 +52,7 @@ public class ActionsOfAMarketAdministrator {
     private AuthenticationController authenticationController;
     private NotificationController notificationController;
 
-    public ActionsOfAMarketAdministrator(StoreMongoCollection storeMongo) {
+    public ActionsOfAMarketAdministrator(StoreCrudCollection storeMongo) {
         storeRepository = new StoreRepository(storeMongo);
     }
 

@@ -39,11 +39,11 @@ public class ActionsOfAStoreOwner {
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCartFactory shoppingCartFactory;
     private Guest guest;
-    private ShoppingCartMongoCollection shoppingCartMongo;
+    private ShoppingCartCrudCollection shoppingCartMongo;
     private StoreBasketFactory storeBasketFactory;
-    private UserMongoCollection userMongo;
-    private TransactionMongoCollection transMongo;
-    private ProductMongoCollection productMongo;
+    private UserCrudCollection userMongo;
+    private TransactionCrudCollection transMongo;
+    private ProductCrudCollection productMongo;
     private UserCredentialsRepository userCredentialsRepository;
     private Rating rating;
     private ProductInventory productInventory;
@@ -60,7 +60,7 @@ public class ActionsOfAStoreOwner {
     private NotificationController notificationController;
     private ProductRepository productRepository;
 
-    public ActionsOfAStoreOwner(StoreMongoCollection storeMongo){
+    public ActionsOfAStoreOwner(StoreCrudCollection storeMongo){
         storeRepository = new StoreRepository(storeMongo);
     }
 

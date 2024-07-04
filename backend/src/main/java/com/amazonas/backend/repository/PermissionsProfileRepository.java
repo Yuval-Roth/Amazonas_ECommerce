@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.PermissionProfileMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.PermissionProfileCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class PermissionsProfileRepository extends AbstractCachingRepository<Perm
 
     private final ReadWriteLock permissionsProfileLock;
 
-    public PermissionsProfileRepository(PermissionProfileMongoCollection repo) {
+    public PermissionsProfileRepository(PermissionProfileCrudCollection repo) {
         super(repo);
         userIdToPermissionsProfile = new HashMap<>();
         permissionsProfileLock = new ReadWriteLock();

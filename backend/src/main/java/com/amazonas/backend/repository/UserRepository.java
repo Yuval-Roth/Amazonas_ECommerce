@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.userProfiles.User;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.UserMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.UserCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class UserRepository extends AbstractCachingRepository<User> {
     private final Map<String, User> userCache;
     private final ReadWriteLock userLock;
 
-    public UserRepository(UserMongoCollection repo) {
+    public UserRepository(UserCrudCollection repo) {
         super(repo);
         userLock = new ReadWriteLock();
         userCache = new HashMap<>();

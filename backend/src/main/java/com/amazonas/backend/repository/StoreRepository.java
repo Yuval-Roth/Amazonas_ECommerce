@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.StoreMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.StoreCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class StoreRepository extends AbstractCachingRepository<Store> {
     private final Map<String, Store> storeCache;
 
 
-    public StoreRepository(StoreMongoCollection repo) {
+    public StoreRepository(StoreCrudCollection repo) {
         super(repo);
         storeLock = new ReadWriteLock();
         storeCache = new HashMap<>();

@@ -1,9 +1,9 @@
 package com.amazonas.backend.repository.mongoCollections;
 
 import com.amazonas.backend.business.authentication.UserCredentials;
-import com.amazonas.backend.repository.abstracts.MongoCollection;
+import com.amazonas.backend.repository.abstracts.CrudCollection;
 import org.springframework.stereotype.Repository;
 
 @Repository("userCredentialsMongoCollection")
-public interface UserCredentialsMongoCollection extends MongoCollection<UserCredentials> {
+public interface UserCredentialsCrudCollection extends CrudCollection<UserCredentials> {
 }

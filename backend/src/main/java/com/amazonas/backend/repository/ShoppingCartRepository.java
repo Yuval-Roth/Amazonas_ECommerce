@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.ShoppingCartMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.ShoppingCartCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ public class ShoppingCartRepository extends AbstractCachingRepository<ShoppingCa
     private final Map<String, ShoppingCart> cartCache; //TODO: REMOVE THIS
     private final ReadWriteLock userLock;
 
-    public ShoppingCartRepository(ShoppingCartMongoCollection repo) {
+    public ShoppingCartRepository(ShoppingCartCrudCollection repo) {
         super(repo);
         userLock = new ReadWriteLock();
         cartCache = new HashMap<>();

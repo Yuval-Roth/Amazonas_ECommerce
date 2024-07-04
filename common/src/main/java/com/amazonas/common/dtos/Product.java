@@ -1,22 +1,29 @@
 package com.amazonas.common.dtos;
 
 import com.amazonas.common.utils.Rating;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Entity
 public class Product implements Cloneable {
 
-
     private String storeId;
+    @Id
     private String productId;
     private String productName;
     private Double price;
     private String category;
     private String description;
     private Rating rating;
+    @ElementCollection
     private Set<String> keyWords;
+
+    public Product() {}
 
     public Product(String productId,
                    String productName,

@@ -3,7 +3,7 @@ package com.amazonas.backend.repository;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.TransactionMongoCollection;
+import com.amazonas.backend.repository.mongoCollections.TransactionCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     ReadWriteLock lock = new ReadWriteLock();
 
 
-    public TransactionRepository(TransactionMongoCollection repo) {
+    public TransactionRepository(TransactionCrudCollection repo) {
         super(repo);
         userIdToTransactions = new HashMap<>();
         storeIdToTransactions = new HashMap<>();
