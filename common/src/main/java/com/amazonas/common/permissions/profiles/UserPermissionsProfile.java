@@ -4,21 +4,28 @@ import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.utils.ReadWriteLock;
+import jakarta.persistence.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@Entity
 public class UserPermissionsProfile implements PermissionsProfile {
 
+    @Id
     private final String userId;
-    private final PermissionsProfile defaultProfile;
-    private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
+    @Transient
+    private PermissionsProfile defaultProfile;
+    @OneToMany
+    private final Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
+    @ElementCollection
     private final Set<UserActions> allowedUserActions;
+    @ElementCollection
     private final Set<MarketActions> allowedMarketActions;
+    @Transient
     private final ReadWriteLock lock;
-
 
     public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
@@ -29,10 +36,19 @@ public class UserPermissionsProfile implements PermissionsProfile {
         lock = new ReadWriteLock();
     }
 
+    public UserPermissionsProfile() {
+        this.userId = "not used";
+        this.defaultProfile = new DefaultPermissionsProfile("not used");
+        this.storeIdToAllowedStoreActions = new HashMap<>();
+        this.allowedUserActions = new HashSet<>();
+        this.allowedMarketActions = new HashSet<>();
+        this.lock = new ReadWriteLock();
+    }
+
     @Override
     public boolean addStorePermission(String storeId, StoreActions action) {
         lock.acquireWrite();
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new HashSet<>());
+        StoreActionsCollection allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new StoreActionsCollection(userId, storeId));
         boolean output = allowedActions.add(action);
         lock.releaseWrite();
         return output;
@@ -42,7 +58,7 @@ public class UserPermissionsProfile implements PermissionsProfile {
     public boolean removeStorePermission(String storeId, StoreActions action) {
         boolean result;
         lock.acquireWrite();
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
+        StoreActionsCollection allowedActions = storeIdToAllowedStoreActions.get(storeId);
         if (allowedActions != null) {
             result = allowedActions.remove(action);
             if (allowedActions.isEmpty()) {
@@ -125,7 +141,7 @@ public class UserPermissionsProfile implements PermissionsProfile {
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
         lock.acquireRead();
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
+        StoreActionsCollection allowedActions = storeIdToAllowedStoreActions.get(storeId);
         boolean result = allowedActions != null && allowedActions.contains(action);
         lock.releaseRead();
         return result;
@@ -134,5 +150,36 @@ public class UserPermissionsProfile implements PermissionsProfile {
     @Override
     public String getUserId() {
         return userId;
+    }
+
+    public void setDefaultProfile(PermissionsProfile defaultProfile) {
+        this.defaultProfile = defaultProfile;
+    }
+
+    @Entity
+    private record StoreActionsCollection(
+            @Id String userId,
+            @Id String storeId,
+            @ElementCollection Set<StoreActions> allowedActions){
+
+        public StoreActionsCollection(String userId, String storeId){
+            this(userId, storeId, new HashSet<>());
+        }
+
+        public boolean remove(StoreActions action) {
+            return allowedActions.remove(action);
+        }
+
+        public boolean isEmpty() {
+            return allowedActions.isEmpty();
+        }
+
+        public boolean contains(StoreActions action) {
+            return allowedActions.contains(action);
+        }
+
+        public boolean add(StoreActions action) {
+            return allowedActions.add(action);
+        }
     }
 }

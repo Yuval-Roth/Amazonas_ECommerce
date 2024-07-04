@@ -1,8 +1,9 @@
 package com.amazonas.backend.repository;
 
-import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.PermissionProfileCrudCollection;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component("permissionsProfileRepository")
-public class PermissionsProfileRepository extends AbstractCachingRepository<PermissionsProfile> {
+public class PermissionsProfileRepository extends AbstractCachingRepository<UserPermissionsProfile> {
 
-    private final Map<String, PermissionsProfile> userIdToPermissionsProfile;
+    private final Map<String, UserPermissionsProfile> userIdToPermissionsProfile;
 
     private final ReadWriteLock permissionsProfileLock;
 
@@ -32,7 +33,7 @@ public class PermissionsProfileRepository extends AbstractCachingRepository<Perm
         }
     }
 
-    public void savePermissionsProfile(PermissionsProfile profile) {
+    public void savePermissionsProfile(UserPermissionsProfile profile) {
         permissionsProfileLock.acquireWrite();
         try {
             userIdToPermissionsProfile.put(profile.getUserId(), profile);
@@ -41,7 +42,7 @@ public class PermissionsProfileRepository extends AbstractCachingRepository<Perm
         }
     }
 
-    public void saveAllPermissionsProfiles(Collection<PermissionsProfile> profiles) {
+    public void saveAllPermissionsProfiles(Collection<UserPermissionsProfile> profiles) {
         permissionsProfileLock.acquireWrite();
         try {
             profiles.forEach(profile -> userIdToPermissionsProfile.put(profile.getUserId(), profile));
@@ -50,7 +51,7 @@ public class PermissionsProfileRepository extends AbstractCachingRepository<Perm
         }
     }
 
-    public void addUser(String userId, PermissionsProfile profile) {
+    public void addUser(String userId, UserPermissionsProfile profile) {
         permissionsProfileLock.acquireWrite();
         try {
             userIdToPermissionsProfile.put(userId, profile);
