@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component("reservationRepository")
-public class ReservationRepository{
+public class ReservationRepository {
 
     private final Map<String, List<Reservation>> reservationCache;
     private final ReadWriteLock reservationLock;

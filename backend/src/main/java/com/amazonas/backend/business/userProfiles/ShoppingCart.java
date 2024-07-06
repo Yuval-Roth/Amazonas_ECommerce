@@ -4,23 +4,40 @@ import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.common.utils.ReadWriteLock;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
+
+@Entity
 public class ShoppingCart {
     private static final Logger log = LoggerFactory.getLogger(ShoppingCart.class);
-    private final StoreBasketFactory storeBasketFactory;
-    private final String userId;
-    private final ReadWriteLock lock;
 
+    @Transient
+    private StoreBasketFactory storeBasketFactory;
+    @Id
+    private final String userId;
+    @Transient
+    private final ReadWriteLock lock;
+    @OneToMany
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
     public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
         this.storeBasketFactory = storeBasketFactory;
         this.userId = userId;
         baskets = new HashMap<>();
+        lock = new ReadWriteLock();
+    }
+
+    public ShoppingCart() {
+        storeBasketFactory = null;
+        userId = null;
+        baskets = null;
         lock = new ReadWriteLock();
     }
 
