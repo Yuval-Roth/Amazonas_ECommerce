@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mysql:
     container_name: mysql
-    image: mysql:latest
+    image: mysql:8.0
     ports:
       - "3306:3306"
     environment:
@@ -11,3 +11,5 @@ services:
       MYSQL_DATABASE: amazonas_db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+#    volumes:
+#      - C:\mysql_data:/var/lib/mysql
