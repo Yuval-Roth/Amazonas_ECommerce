@@ -1,18 +1,32 @@
 package com.amazonas.backend.business.stores.storePositions;
 
+import jakarta.persistence.*;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+@Entity
 public class OwnerNode {
+
+    @OneToMany
     private List<OwnerNode> ownersChildren;
+    @ElementCollection
     private List<String> managersChildren;
+    @ManyToOne
     private final OwnerNode parent;
-    private final String userID;
+    @Id private final String userID;
 
     public OwnerNode(String userID, OwnerNode appointee) {
         this.userID = userID;
         this.parent = appointee;
+        managersChildren = new LinkedList<>();
+        ownersChildren = new LinkedList<>();
+    }
+
+    public OwnerNode() {
+        this.userID = "";
+        this.parent = new OwnerNode("", null);
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
     }
@@ -63,8 +77,7 @@ public class OwnerNode {
     }
 
     public List<String> getAllChildren() {
-        List<String> ret = new LinkedList<>();
-        ret.addAll(managersChildren);
+        List<String> ret = new LinkedList<>(managersChildren);
         ret.add(getUserID());
         for(OwnerNode ownershipChild : ownersChildren) {
             ret.addAll(ownershipChild.getAllChildren());

@@ -2,6 +2,7 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.ShoppingCartException;
+import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,10 +10,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Entity
 public class StoreBasket {
+    @Id @GeneratedValue
+    private String id;
     private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
+    @ElementCollection
     private final Map<String, Integer> products; // productId --> quantity
+    @Transient
     private final Function<Map<String,Integer>, Reservation> makeReservation;
+    @Transient
     private final Function<Map<String, Integer>, Double> calculatePrice;
     private boolean reserved;
 
@@ -22,6 +29,22 @@ public class StoreBasket {
 
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
+        products = new HashMap<>();
+    }
+
+    public StoreBasket() {
+        makeReservation = new Function<Map<String, Integer>, Reservation>() {
+            @Override
+            public Reservation apply(Map<String, Integer> stringIntegerMap) {
+                throw new UnsupportedOperationException("function not set");
+            }
+        };
+        calculatePrice = new Function<Map<String, Integer>, Double>() {
+            @Override
+            public Double apply(Map<String, Integer> stringIntegerMap) {
+                throw new UnsupportedOperationException("function not set");
+            }
+        };
         products = new HashMap<>();
     }
 

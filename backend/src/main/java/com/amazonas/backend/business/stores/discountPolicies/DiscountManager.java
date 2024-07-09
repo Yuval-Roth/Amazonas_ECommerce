@@ -7,12 +7,17 @@ import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.Cate
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
 
+@Component("discountManager")
+@Scope("prototype")
 public class DiscountManager {
     private DiscountComponent discountComponent;
+
     public DiscountManager() {
         discountComponent = null;
     }

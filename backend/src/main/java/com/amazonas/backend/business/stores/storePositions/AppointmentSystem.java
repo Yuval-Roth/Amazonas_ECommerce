@@ -1,13 +1,19 @@
 package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.common.utils.ReadWriteLock;
+import jakarta.persistence.*;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+@Entity
 public class AppointmentSystem {
+    @Id @GeneratedValue
+    String id;
+
+    @OneToMany
     private final Map<String, OwnerNode> managersList; // contains all the managers of the store every moment
     private final OwnerNode ownershipTree; // handle the appointment hierarchy as a tree
     private final Map<String, OwnerNode> ownershipList; //contains all the owners of the store every moment
@@ -18,6 +24,13 @@ public class AppointmentSystem {
         this.ownershipTree = new OwnerNode(storeFounderId, null);
         this.ownershipList = new HashMap<>();
         ownershipList.put(ownershipTree.getUserID(), ownershipTree);
+        this.appointmentLock = new ReadWriteLock();
+    }
+
+    public AppointmentSystem() {
+        this.managersList = new HashMap<>();
+        this.ownershipTree = null;
+        this.ownershipList = new HashMap<>();
         this.appointmentLock = new ReadWriteLock();
     }
 

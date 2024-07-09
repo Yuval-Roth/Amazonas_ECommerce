@@ -12,44 +12,47 @@ import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
-import com.amazonas.backend.repository.ProductRepository;
-import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import org.springframework.lang.Nullable;
-import org.springframework.objenesis.SpringObjenesis;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Entity
 public class Store {
 
-    // Static final variables
+    // Constants
     private static final int FIVE_MINUTES = 5 * 60;
     private static final long reservationTimeoutSeconds = FIVE_MINUTES;
 
-    // Final instance variables
-    private final ReservationFactory reservationFactory;
-    private final PendingReservationMonitor pendingReservationMonitor;
-    private final PermissionsController permissionsController;
-    private final TransactionRepository repository;
-    private final ProductInventory inventory;
-    private final AppointmentSystem appointmentSystem;
-    private final DiscountManager discountManager;
-    private final ReadWriteLock lock;
-    private final String storeId;
-    private final String storeName;
+    // Dependencies
+    @Transient private ReservationFactory reservationFactory;
+    @Transient private PendingReservationMonitor pendingReservationMonitor;
+    @Transient private PermissionsController permissionsController;
+    @Transient private TransactionRepository repository;
+    @Transient private ReadWriteLock lock;
+    @Transient private DiscountManager discountManager;
+    @Transient private ProductInventory inventory;
 
-    // Non-final instance variables
+    // instance variables
+    @Id private final String storeId;
+    private final String storeName;
     private boolean isOpen;
     private Rating storeRating;
     private String storeDescription;
+    @OneToOne private AppointmentSystem appointmentSystem;
 
     public Store(String storeId,
                  String storeName,
@@ -74,6 +77,21 @@ public class Store {
         this.discountManager = new DiscountManager();
         lock = new ReadWriteLock();
         isOpen = true;
+    }
+
+    public Store() {
+        storeId = null;
+        storeName = null;
+        storeDescription = null;
+        storeRating = null;
+        inventory = null;
+        appointmentSystem = null;
+        reservationFactory = null;
+        pendingReservationMonitor = null;
+        permissionsController = null;
+        repository = null;
+        discountManager = null;
+        lock = new ReadWriteLock();
     }
 
     public StoreDetails getDetails() {
@@ -566,5 +584,29 @@ public class Store {
 
     public String getStoreName() {
         return storeName;
+    }
+
+    public void setReservationFactory(ReservationFactory reservationFactory) {
+        this.reservationFactory = reservationFactory;
+    }
+
+    public void setPendingReservationMonitor(PendingReservationMonitor pendingReservationMonitor) {
+        this.pendingReservationMonitor = pendingReservationMonitor;
+    }
+
+    public void setPermissionsController(PermissionsController permissionsController) {
+        this.permissionsController = permissionsController;
+    }
+
+    public void setRepository(TransactionRepository repository) {
+        this.repository = repository;
+    }
+
+    public void setInventory(ProductInventory inventory) {
+        this.inventory = inventory;
+    }
+
+    public void setDiscountManager(DiscountManager discountManager) {
+        this.discountManager = discountManager;
     }
 }
