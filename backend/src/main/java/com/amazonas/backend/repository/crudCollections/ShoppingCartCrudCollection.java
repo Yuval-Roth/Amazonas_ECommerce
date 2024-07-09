@@ -1,4 +1,4 @@
-package com.amazonas.backend.repository.mongoCollections;
+package com.amazonas.backend.repository.crudCollections;
 
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.repository.abstracts.CrudCollection;

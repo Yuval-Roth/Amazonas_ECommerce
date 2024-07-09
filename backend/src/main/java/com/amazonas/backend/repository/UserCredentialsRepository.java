@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.UserCredentialsCrudCollection;
+import com.amazonas.backend.repository.crudCollections.UserCredentialsCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 

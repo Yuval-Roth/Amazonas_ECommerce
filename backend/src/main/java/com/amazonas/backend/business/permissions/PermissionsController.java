@@ -14,9 +14,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
 public class PermissionsController {
+
+    // TODO: use checked exceptions to handle errors
 
     private static final Logger log = LoggerFactory.getLogger(PermissionsController.class);
 
@@ -25,6 +30,7 @@ public class PermissionsController {
     private final AdminPermissionsProfile adminProfile;
     private final ReadWriteLock lock;
     private final PermissionsProfileRepository repository;
+    private final Map<String,PermissionsProfile> inMemoryProfiles;
 
     public PermissionsController(DefaultPermissionsProfile defaultRegisteredUserPermissionsProfile,
                                  DefaultPermissionsProfile guestPermissionsProfile,
@@ -35,6 +41,7 @@ public class PermissionsController {
         this.adminProfile = adminPermissionsProfile;
         this.repository = permissionsProfileRepository;
         lock = new ReadWriteLock();
+        inMemoryProfiles = new HashMap<>();
     }
     
     public boolean addPermission(String userId, UserActions action) {
@@ -104,17 +111,17 @@ public class PermissionsController {
     public void registerUser(String userId) {
         log.debug("Registering user {}", userId);
         UserPermissionsProfile newProfile = new UserPermissionsProfile(userId, defaultProfile);
-        registerUser(userId, newProfile, "User already registered");
+        registerUser(userId, newProfile);
     }
 
     public void registerGuest(String userId) {
         log.debug("Registering guest {}", userId);
-        registerUser(userId,guestProfile, "Guest already registered");
+        registerUser(userId,guestProfile);
     }
 
     public void registerAdmin(String userId) {
         log.debug("Registering admin {}", userId);
-        registerUser(userId, adminProfile, "Admin already registered");
+        registerUser(userId, adminProfile);
     }
 
     public void removeUser(String userId) {
@@ -135,28 +142,39 @@ public class PermissionsController {
         log.debug("Admin removed successfully");
     }
 
-    private void registerUser(String userId, UserPermissionsProfile profile) {
-        try{
-            lock.acquireWrite();
-            repository.addUser(userId, profile);
-        } finally{
-            lock.releaseWrite();
+    private void registerUser(String userId, PermissionsProfile profile) {
+
+        if(profile instanceof UserPermissionsProfile userP){
+            repository.addUser(userId, userP);
+        } else {
+            if(inMemoryProfiles.containsKey(userId)) {
+                log.error("User {} already registered", userId);
+                return;
+            }
+            try{
+                lock.acquireWrite();
+                inMemoryProfiles.put(userId, profile);
+            } finally{
+                lock.releaseWrite();
+            }
         }
     }
-
-    private void registerGuest
 
     private void removeUser(String userId, String failMessage) {
         try{
             lock.acquireWrite();
-            var removed = repository.removeUser(userId);
-
-            if(removed == null) {
-                log.error(failMessage);
-                throw new IllegalArgumentException(failMessage);
+            if(inMemoryProfiles.containsKey(userId)) {
+                inMemoryProfiles.remove(userId);
+                return;
             }
         } finally {
             lock.releaseWrite();
+        }
+        var removed = repository.removeUser(userId);
+
+        if(removed == null) {
+            log.error(failMessage);
+            throw new IllegalArgumentException(failMessage);
         }
     }
 

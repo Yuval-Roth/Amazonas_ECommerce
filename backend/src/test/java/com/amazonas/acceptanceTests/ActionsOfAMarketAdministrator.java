@@ -16,7 +16,7 @@ import com.amazonas.backend.business.userProfiles.StoreBasketFactory;
 import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
-import com.amazonas.backend.repository.mongoCollections.*;
+import com.amazonas.backend.repository.crudCollections.*;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

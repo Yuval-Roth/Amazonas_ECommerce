@@ -1,4 +1,4 @@
-package com.amazonas.backend.repository.mongoCollections;
+package com.amazonas.backend.repository.crudCollections;
 
 import com.amazonas.backend.repository.abstracts.CrudCollection;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;

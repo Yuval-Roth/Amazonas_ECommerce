@@ -3,7 +3,7 @@ package com.amazonas.backend.repository;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.TransactionCrudCollection;
+import com.amazonas.backend.repository.crudCollections.TransactionCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

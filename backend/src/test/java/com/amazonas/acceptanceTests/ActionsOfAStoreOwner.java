@@ -22,7 +22,7 @@ import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.*;
-import com.amazonas.backend.repository.mongoCollections.*;
+import com.amazonas.backend.repository.crudCollections.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;

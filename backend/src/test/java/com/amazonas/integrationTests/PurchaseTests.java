@@ -17,7 +17,7 @@ import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
-import com.amazonas.backend.repository.mongoCollections.TransactionCrudCollection;
+import com.amazonas.backend.repository.crudCollections.TransactionCrudCollection;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;

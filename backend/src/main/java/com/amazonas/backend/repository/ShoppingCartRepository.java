@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.ShoppingCartCrudCollection;
+import com.amazonas.backend.repository.crudCollections.ShoppingCartCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 

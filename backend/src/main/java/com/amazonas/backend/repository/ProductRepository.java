@@ -1,6 +1,6 @@
 package com.amazonas.backend.repository;
 
-import com.amazonas.backend.repository.mongoCollections.ProductCrudCollection;
+import com.amazonas.backend.repository.crudCollections.ProductCrudCollection;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.common.utils.ReadWriteLock;

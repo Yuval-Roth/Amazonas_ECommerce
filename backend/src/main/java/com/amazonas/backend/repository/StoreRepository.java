@@ -2,7 +2,7 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.mongoCollections.StoreCrudCollection;
+import com.amazonas.backend.repository.crudCollections.StoreCrudCollection;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
