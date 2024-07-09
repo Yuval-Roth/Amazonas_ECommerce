@@ -6,28 +6,35 @@ import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.utils.ReadWriteLock;
 import jakarta.persistence.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class UserPermissionsProfile implements PermissionsProfile {
 
     @Id
     private final String userId;
+<<<<<<< HEAD
     @Transient
     private PermissionsProfile defaultProfile;
     @OneToMany
     private final Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
     @ElementCollection
+=======
+    private final DefaultPermissionsProfile defaultProfile;
+    private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
+>>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
     private final Set<UserActions> allowedUserActions;
     @ElementCollection
     private final Set<MarketActions> allowedMarketActions;
     @Transient
     private final ReadWriteLock lock;
 
+<<<<<<< HEAD
     public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
+=======
+
+    public UserPermissionsProfile(String userId, DefaultPermissionsProfile defaultProfile) {
+>>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
         this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();
@@ -145,6 +152,11 @@ public class UserPermissionsProfile implements PermissionsProfile {
         boolean result = allowedActions != null && allowedActions.contains(action);
         lock.releaseRead();
         return result;
+    }
+
+    @Override
+    public List<String> getStoreIds() {
+        return new ArrayList<>(storeIdToAllowedStoreActions.keySet());
     }
 
     @Override

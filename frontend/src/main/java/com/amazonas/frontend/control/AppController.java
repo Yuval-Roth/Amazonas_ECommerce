@@ -1,5 +1,7 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import com.amazonas.common.requests.RequestBuilder;
 import com.amazonas.common.requests.auth.AuthenticationRequest;
 import com.amazonas.common.requests.users.LoginRequest;
@@ -16,8 +18,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -61,7 +65,7 @@ public class AppController {
         return post(endpoint.location(), endpoint.returnType(), payload);
     }
 
-    private <T> List<T> get(String location, Class<T> clazz) throws ApplicationException {
+    private <T> List<T> get(String location, Type clazz) throws ApplicationException {
         ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
 
         Response response;
@@ -84,7 +88,7 @@ public class AppController {
         return response.payload(clazz);
     }
 
-    private <T> List<T> post(String location, Class<T> clazz, Object payload) throws ApplicationException {
+    private <T> List<T> post(String location, Type clazz, Object payload) throws ApplicationException {
         ApplicationException postFailed = new ApplicationException("Failed to send data");
 
         String body = RequestBuilder.create()
@@ -133,7 +137,8 @@ public class AppController {
             return false;
         }
 
-        String token, userId;
+        String token, userId, body;
+        UserPermissionsProfile profile;
         try {
             userId = (String) getByEndpoint(Endpoints.ENTER_AS_GUEST).getFirst();
             AuthenticationRequest request = new AuthenticationRequest(userId, null);
@@ -142,9 +147,31 @@ public class AppController {
             return false;
         }
         // ---------> logged in as guest
+        // get permissions profile
+        try{
+            body = RequestBuilder.create()
+                    .withUserId(userId)
+                    .withToken(token)
+                    .build()
+                    .toJson();
+            String fetched = APIFetcher.create()
+                    .withUri(BACKEND_URI + Endpoints.GET_USER_PERMISSIONS.location())
+                    .withHeader("Authorization", "Bearer " + token)
+                    .withBody(body)
+                    .withPost()
+                    .fetch();
+            Response response = Response.fromJson(fetched);
+            if(response == null || !response.success()){
+                return false;
+            }
+            profile = response.<UserPermissionsProfile>payload(UserPermissionsProfile.class).getFirst();
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
         setCurrentUserId(userId);
         setGuestLoggedIn(true);
         setToken(token);
+        setPermissionsProfile(profile);
         String sid = getSessionId();
         SessionDetails sessionDetails = sessions.get(sid);
         sessionDetails.setUserId(userId);
@@ -164,6 +191,7 @@ public class AppController {
 
         String body, token, guestId = getCurrentUserId();
         Response authResponse, loginResponse;
+        UserPermissionsProfile profile;
         try {
             body = RequestBuilder.create()
                     .withPayload(new AuthenticationRequest(userId, password))
@@ -201,10 +229,32 @@ public class AppController {
         } catch (IOException | InterruptedException | JsonSyntaxException e) {
             return false;
         }
+        // get permissions profile
+        try{
+            body = RequestBuilder.create()
+                    .withUserId(userId)
+                    .withToken(token)
+                    .build()
+                    .toJson();
+            String fetched = APIFetcher.create()
+                    .withUri(BACKEND_URI + Endpoints.GET_USER_PERMISSIONS.location())
+                    .withHeader("Authorization", "Bearer " + token)
+                    .withBody(body)
+                    .withPost()
+                    .fetch();
+            Response response = Response.fromJson(fetched);
+            if(response == null || !response.success()){
+                return false;
+            }
+            profile = response.<UserPermissionsProfile>payload(UserPermissionsProfile.class).getFirst();
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
         setCurrentUserId(userId);
         setToken(token);
         setUserLoggedIn(true);
         setGuestLoggedIn(false);
+        setPermissionsProfile(profile);
         String sid = getSessionId();
         SessionDetails sessionDetails = sessions.get(sid);
         sessionDetails.setUserId(userId);
@@ -213,7 +263,7 @@ public class AppController {
         return true;
     }
 
-    public boolean register(String email, String username, String password, String confirmPassword) {
+    public boolean register(String email, String username, String password, String confirmPassword, LocalDate birthDate) {
         if (isUserLoggedIn()) {
             return false;
         }
@@ -222,7 +272,7 @@ public class AppController {
             return false;
         }
 
-        RegisterRequest request = new RegisterRequest(email, username, password);
+        RegisterRequest request = new RegisterRequest(email, username, password, birthDate);
         try {
             postByEndpoint(Endpoints.REGISTER_USER, request);
         } catch (ApplicationException e) {
@@ -271,6 +321,14 @@ public class AppController {
     public static boolean isGuestLoggedIn() {
         Boolean isGuestLoggedIn = getSessionAttribute("isGuestLoggedIn");
         return isGuestLoggedIn != null && isGuestLoggedIn;
+    }
+
+    public static PermissionsProfile getPermissionsProfile() {
+        return getSessionAttribute("permissionsProfile");
+    }
+
+    public static void setPermissionsProfile(PermissionsProfile profile) {
+        setSessionsAttribute("permissionsProfile", profile);
     }
 
     public static void setGuestLoggedIn(boolean value) {

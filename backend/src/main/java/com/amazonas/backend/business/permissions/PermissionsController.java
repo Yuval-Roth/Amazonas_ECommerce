@@ -1,11 +1,13 @@
 package com.amazonas.backend.business.permissions;
 
+import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
-import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +20,15 @@ public class PermissionsController {
 
     private static final Logger log = LoggerFactory.getLogger(PermissionsController.class);
 
-    private final PermissionsProfile defaultProfile;
-    private final PermissionsProfile guestProfile;
-    private final PermissionsProfile adminProfile;
+    private final DefaultPermissionsProfile defaultProfile;
+    private final DefaultPermissionsProfile guestProfile;
+    private final AdminPermissionsProfile adminProfile;
     private final ReadWriteLock lock;
     private final PermissionsProfileRepository repository;
 
-    public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
-                                 PermissionsProfile guestPermissionsProfile,
-                                 PermissionsProfile adminPermissionsProfile,
+    public PermissionsController(DefaultPermissionsProfile defaultRegisteredUserPermissionsProfile,
+                                 DefaultPermissionsProfile guestPermissionsProfile,
+                                 AdminPermissionsProfile adminPermissionsProfile,
                                  PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
@@ -133,7 +135,7 @@ public class PermissionsController {
         log.debug("Admin removed successfully");
     }
 
-    private void registerUser(String userId, PermissionsProfile profile , String failMessage) {
+    private void registerUser(String userId, UserPermissionsProfile profile) {
         try{
             lock.acquireWrite();
             repository.addUser(userId, profile);
@@ -141,6 +143,8 @@ public class PermissionsController {
             lock.releaseWrite();
         }
     }
+
+    private void registerGuest
 
     private void removeUser(String userId, String failMessage) {
         try{

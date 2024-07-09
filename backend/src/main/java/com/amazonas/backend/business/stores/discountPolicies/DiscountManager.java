@@ -2,13 +2,16 @@ package com.amazonas.backend.business.stores.discountPolicies;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountComponent.*;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.*;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
+<<<<<<< HEAD
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+=======
+import com.amazonas.common.DiscountDTOs.*;
+>>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
 
 import java.util.LinkedList;
 import java.util.List;
