@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.authentication;
 
+import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-public final class UserCredentials implements UserDetails {
+public final class UserCredentials implements UserDetails, HasId<String> {
     @Id
     private final String userId;
     private final String password;
@@ -45,5 +46,10 @@ public final class UserCredentials implements UserDetails {
 
     public String password() {
         return password;
+    }
+
+    @Override
+    public String getId() {
+        return userId;
     }
 }

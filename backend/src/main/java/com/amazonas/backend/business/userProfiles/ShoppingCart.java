@@ -3,6 +3,7 @@ package com.amazonas.backend.business.userProfiles;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
+import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.utils.ReadWriteLock;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 
 @Entity
-public class ShoppingCart {
+public class ShoppingCart implements HasId<String> {
     private static final Logger log = LoggerFactory.getLogger(ShoppingCart.class);
 
     @Transient
@@ -189,4 +190,8 @@ public class ShoppingCart {
         return baskets;
     }
 
+    @Override
+    public String getId() {
+        return userId;
+    }
 }

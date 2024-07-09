@@ -1,5 +1,6 @@
 package com.amazonas.common.dtos;
 
+import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.utils.Rating;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -10,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-public class Product implements Cloneable {
+public class Product implements Cloneable, HasId<String> {
 
     private String storeId;
     @Id
@@ -167,4 +168,8 @@ public class Product implements Cloneable {
         }
     }
 
+    @Override
+    public String getId() {
+        return productId;
+    }
 }

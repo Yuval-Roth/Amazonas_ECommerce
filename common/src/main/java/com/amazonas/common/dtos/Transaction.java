@@ -1,5 +1,6 @@
 package com.amazonas.common.dtos;
 
+import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Entity
-public final class Transaction {
+public final class Transaction implements HasId<String> {
 
     @Id
     private final String transactionId;
@@ -117,5 +118,10 @@ public final class Transaction {
     @Override
     public int hashCode() {
         return Objects.hash(transactionId, storeId, userId);
+    }
+
+    @Override
+    public String getId() {
+        return transactionId;
     }
 }

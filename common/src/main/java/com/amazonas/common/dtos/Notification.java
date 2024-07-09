@@ -1,5 +1,6 @@
 package com.amazonas.common.dtos;
 
+import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -7,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-public class Notification {
+public class Notification implements HasId<String> {
     @Id
     private final String notificationId;
     private final String title;
@@ -78,5 +79,10 @@ public class Notification {
     @Override
     public int hashCode() {
         return Objects.hashCode(notificationId);
+    }
+
+    @Override
+    public String getId() {
+        return notificationId;
     }
 }

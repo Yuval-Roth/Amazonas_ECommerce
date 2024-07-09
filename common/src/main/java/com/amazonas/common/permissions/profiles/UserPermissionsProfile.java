@@ -1,5 +1,6 @@
 package com.amazonas.common.permissions.profiles;
 
+import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
@@ -9,32 +10,22 @@ import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
-public class UserPermissionsProfile implements PermissionsProfile {
+public class UserPermissionsProfile implements PermissionsProfile, HasId<String> {
 
     @Id
     private final String userId;
-<<<<<<< HEAD
     @Transient
     private PermissionsProfile defaultProfile;
     @OneToMany
     private final Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
     @ElementCollection
-=======
-    private final DefaultPermissionsProfile defaultProfile;
-    private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
->>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
     private final Set<UserActions> allowedUserActions;
     @ElementCollection
     private final Set<MarketActions> allowedMarketActions;
     @Transient
     private final ReadWriteLock lock;
 
-<<<<<<< HEAD
-    public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
-=======
-
     public UserPermissionsProfile(String userId, DefaultPermissionsProfile defaultProfile) {
->>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
         this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();
@@ -166,6 +157,11 @@ public class UserPermissionsProfile implements PermissionsProfile {
 
     public void setDefaultProfile(PermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
+    }
+
+    @Override
+    public String getId() {
+        return userId;
     }
 
     @Entity

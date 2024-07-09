@@ -2,12 +2,10 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
-import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
@@ -15,11 +13,14 @@ import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
-import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
+import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
@@ -34,7 +35,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
-public class Store {
+public class Store implements HasId<String> {
 
     // Constants
     private static final int FIVE_MINUTES = 5 * 60;
@@ -657,5 +658,10 @@ public class Store {
 
     public void setPurchasePolicyManager(PurchasePolicyManager purchasePolicyManager) {
         this.purchasePolicyManager = purchasePolicyManager;
+    }
+
+    @Override
+    public String getId() {
+        return storeId;
     }
 }

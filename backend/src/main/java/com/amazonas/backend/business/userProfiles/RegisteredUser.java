@@ -1,7 +1,10 @@
 package com.amazonas.backend.business.userProfiles;
+
+import com.amazonas.common.abstracts.HasId;
+
 import java.time.LocalDate;
 
-public class RegisteredUser extends User{
+public class RegisteredUser extends User implements HasId<String> {
 
     private String email;
     private LocalDate birthDate;
@@ -26,5 +29,10 @@ public class RegisteredUser extends User{
     }
 
     public LocalDate getBirthDate() {return birthDate.plusDays(0); }
+
+    @Override
+    public String getId() {
+        return getUserId();
+    }
 }
 

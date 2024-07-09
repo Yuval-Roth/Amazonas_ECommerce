@@ -1,5 +1,6 @@
 package com.amazonas.backend.repository;
 
+import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.business.userProfiles.User;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.crudCollections.UserCrudCollection;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component("userRepository")
-public class UserRepository extends AbstractCachingRepository<User> {
+public class UserRepository extends AbstractCachingRepository<RegisteredUser> {
 
     private final Map<String, User> userCache;
     private final ReadWriteLock userLock;
