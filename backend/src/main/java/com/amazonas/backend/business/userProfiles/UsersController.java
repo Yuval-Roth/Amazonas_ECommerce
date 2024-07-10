@@ -104,7 +104,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         email = email.toLowerCase();
 
-        if(userRepository.userIdExists(userId)){
+        if(userRepository.existsById(userId)){
             log.debug("User with id: {} already exists in the system", userId);
             throw new UserException("This user name is already exists in the system");
         }
@@ -125,7 +125,7 @@ public class UsersController {
         }
 
         RegisteredUser newRegisteredUser = new RegisteredUser(userId,email, birthDate);
-        userRepository.saveUser(newRegisteredUser);
+        userRepository.save(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
         permissionsController.registerUser(userId);
@@ -154,12 +154,12 @@ public class UsersController {
     public void loginToRegistered(String guestInitialId,String userId) throws UserException {
         userId = userId.toLowerCase();
 
-        if(! userRepository.userIdExists(userId)){
+        if(! userRepository.existsById(userId)){
             log.debug("User with id: {} does not exist in the system", userId);
             throw new UserException("Login failed");
         }
 
-        User loggedInUser = userRepository.getUser(userId);
+        User loggedInUser = getUser(userId);
         ShoppingCart cartOfGuest;
         try{
             lock.acquireWrite();
@@ -227,9 +227,6 @@ public class UsersController {
     public User getUser(String userId) throws UserException {
         userId = userId.toLowerCase();
 
-        if(userRepository.userIdExists(userId)){
-            return userRepository.getUser(userId);
-        }
         try{
             lock.acquireRead();
             if(guests.containsKey(userId)){
@@ -239,13 +236,19 @@ public class UsersController {
         finally {
             lock.releaseRead();
         }
+
+        Optional<RegisteredUser> user = userRepository.findById(userId);
+        if(user.isPresent()){
+            return user.get();
+        }
+
         log.debug("User with id: {} does not exist", userId);
         throw new UserException("The user does not exists");
     }
 
     public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
         userId = userId.toLowerCase();
-        if(!userRepository.userIdExists(userId)){
+        if(!userRepository.existsById(userId)){
             log.debug("User with id: {} does not exist", userId);
             throw new UserException("Invalid userId");
         }
@@ -306,7 +309,7 @@ public class UsersController {
 
             // charge the user
             ShoppingCart cart = getCartWithValidation(userId);
-            User user = userRepository.getUser(userId);
+            User user = getUser(userId);
             if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
                 final String finalUserId = userId;
                 reservations.forEach(r -> {
@@ -354,7 +357,7 @@ public class UsersController {
 
     public boolean cancelPurchase(String userId) throws UserException {
         userId = userId.toLowerCase();
-        if(!userRepository.userIdExists(userId)){
+        if(!userRepository.existsById(userId)){
             log.debug("Cancel Purchase - invalid userId");
             throw new UserException("Invalid userId");
         }
