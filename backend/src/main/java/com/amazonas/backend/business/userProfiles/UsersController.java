@@ -126,7 +126,7 @@ public class UsersController {
 
         RegisteredUser newRegisteredUser = new RegisteredUser(userId,email, birthDate);
         userRepository.save(newRegisteredUser);
-        shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
+        shoppingCartRepository.save(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
         permissionsController.registerUser(userId);
         log.debug("User with id: {} registered successfully", userId);
@@ -177,9 +177,9 @@ public class UsersController {
             lock.releaseWrite();
         }
 
-        ShoppingCart cartOfUser = shoppingCartRepository.getCart(userId);
+        ShoppingCart cartOfUser = getCartWithValidation(userId);
         ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
-        shoppingCartRepository.saveCart(mergedShoppingCart);
+        shoppingCartRepository.save(mergedShoppingCart);
         log.debug("Guest cart merged with user cart successfully");
     }
 
@@ -350,7 +350,7 @@ public class UsersController {
             log.debug("Documented the transactions successfully");
 
             // give the user a new empty cart
-            shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
+            shoppingCartRepository.save(shoppingCartFactory.get(userId));
             log.debug("The purchase completed");
         }
         finally{
@@ -405,11 +405,12 @@ public class UsersController {
     }
 
     private ShoppingCart getCartWithValidation(String userId) throws UserException {
-        ShoppingCart cart = shoppingCartRepository.getCart(userId);
-        if(cart == null){
+        userId = userId.toLowerCase();
+        Optional<ShoppingCart> cart = shoppingCartRepository.findById(userId);
+        if(cart.isEmpty()){
             throw new UserException("Invalid userId");
         }
-        return cart;
+        return cart.get();
     }
 
     private boolean isValidPassword(String password) {

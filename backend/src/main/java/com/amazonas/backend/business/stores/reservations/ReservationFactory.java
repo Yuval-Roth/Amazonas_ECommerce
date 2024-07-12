@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component("reservationFactory")
@@ -31,10 +32,14 @@ public class ReservationFactory {
                            Map<String, Integer> productToQuantity,
                            LocalDateTime expirationDate){
 
-        ShoppingCart shoppingCart = shoppingCartRepository.getCart(userId);
+        Optional<ShoppingCart> shoppingCart = shoppingCartRepository.findById(userId);
+        if(shoppingCart.isEmpty()) {
+            log.error("this should not happen: User does not have a shopping cart");
+            throw new IllegalStateException("this should not happen: User does not have a shopping cart");
+        }
         Runnable unReserveBasket = () -> {
             try {
-                shoppingCart.unReserve(storeId);
+                shoppingCart.get().unReserve(storeId);
             } catch (ShoppingCartException e) {
                 log.error("this should not happen: Failed to unreserve basket", e);
                 throw new IllegalStateException("this should not happen: Failed to unreserve basket");
