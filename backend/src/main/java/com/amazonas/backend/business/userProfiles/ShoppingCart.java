@@ -194,4 +194,12 @@ public class ShoppingCart implements HasId<String> {
     public String getId() {
         return userId;
     }
+
+    public ShoppingCart getSerializableInstance(){
+        ShoppingCart serializable = new ShoppingCart(null,userId);
+        for (var entry : baskets.entrySet()) {
+            serializable.baskets.put(entry.getKey(), entry.getValue().getSerializableInstance());
+        }
+        return serializable;
+    }
 }

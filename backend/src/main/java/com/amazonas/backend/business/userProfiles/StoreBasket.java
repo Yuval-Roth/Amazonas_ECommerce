@@ -15,8 +15,9 @@ public class StoreBasket {
     @Id @GeneratedValue
     private String id;
     private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
+
     @ElementCollection
-    private final Map<String, Integer> products; // productId --> quantity
+    private Map<String, Integer> products; // productId --> quantity
     @Transient
     private final Function<Map<String,Integer>, Reservation> makeReservation;
     @Transient
@@ -118,5 +119,12 @@ public class StoreBasket {
 
     public void unReserve() {
         reserved = false;
+    }
+
+    public StoreBasket getSerializableInstance() {
+        StoreBasket serializable = new StoreBasket(null, null);
+        serializable.products = this.products;
+        serializable.reserved = this.reserved;
+        return serializable;
     }
 }

@@ -73,6 +73,10 @@ public final class Transaction implements HasId<String> {
         this.state = TransactionState.CANCELED;
     }
 
+    public TransactionState getState() {
+        return state;
+    }
+
     public String getTransactionId() {
         return transactionId;
     }
