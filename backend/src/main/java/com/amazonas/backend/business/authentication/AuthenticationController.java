@@ -140,7 +140,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         String password = generatePassword();
         log.debug("Adding guest credentials for userId {}", userId);
         String hashedPassword = encoder.encode(password);
-        repository.saveGuest(userId,hashedPassword);
+        repository.saveGuest(userId);
     }
 
     public void removeGuest(String userId){
@@ -164,7 +164,8 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
         log.debug("Adding user credentials for user {}", username);
         String hashedPassword = encoder.encode(user.getPassword());
-        repository.saveHashedPassword(username,hashedPassword);
+        UserCredentials newUser = new UserCredentials(username,hashedPassword);
+        repository.save(newUser);
     }
 
     @Override
@@ -175,7 +176,8 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         }
 
         String hashedPassword = encoder.encode(user.getPassword());
-        repository.saveHashedPassword(username,hashedPassword);
+        UserCredentials updatedUser = new UserCredentials(username,hashedPassword);
+        repository.save(updatedUser);
     }
 
     @Override
@@ -194,9 +196,12 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         if (currentUser == null) {
             throw new AccessDeniedException("Can't change password as no Authentication object found in context for current user.");
         } else {
-            String username = currentUser.getName();                                            //TODO: add this when we have a mongodb
-            UserCredentials currentUserFromDB = repository.findById(username);  //.orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            if(isPasswordsMatch(oldPassword, currentUserFromDB.getPassword())) {
+            String username = currentUser.getName();
+            Optional<UserCredentials> currentUserFromDB = repository.findById(username);
+            if(currentUserFromDB.isEmpty()) {
+                throw new UsernameNotFoundException("User not found");
+            }
+            if(isPasswordsMatch(oldPassword, currentUserFromDB.get().getPassword())) {
                 String hashedPassword = encoder.encode(newPassword);
                 UserCredentials updatedUser = new UserCredentials(username, hashedPassword);
                 repository.save(updatedUser);
@@ -214,10 +219,11 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         username = username.toLowerCase();
-        if(!userExists(username)) {
+        Optional<UserCredentials> user = repository.findById(username);
+        if(user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
-        return repository.findById(username);
+        return user.get();
     }
 
     //============================================================================ |
@@ -226,15 +232,16 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     private boolean authenticate(String userId, String password) {
         log.debug("Authenticating user: {}", userId);
-        String hashedPassword = repository.getHashedPassword(userId);
+        Optional<UserCredentials> user = repository.findById(userId);
 
         // check if the user exists
-        if(hashedPassword == null) {
+        if(user.isEmpty()) {
             log.debug("User {} does not exist", userId);
             return false;
         }
         log.trace("User {} exists", userId);
 
+        String hashedPassword = user.get().password();
         // check if the password is correct
         if(! isPasswordsMatch(password, hashedPassword)) {
             log.debug("Incorrect password for user {}", userId);
