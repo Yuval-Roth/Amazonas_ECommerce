@@ -43,6 +43,15 @@ public class PermissionsController {
         lock = new ReadWriteLock();
         inMemoryProfiles = new HashMap<>();
     }
+
+    //TODO: fix this when we have a database
+    public boolean isAdmin(String userId) {
+        log.debug("Checking if user {} is admin", userId);
+        PermissionsProfile profile = getPermissionsProfile(userId);
+        boolean result = profile instanceof AdminPermissionsProfile;
+        log.debug("User is {}", result? "admin" : "not admin");
+        return result;
+    }
     
     public boolean addPermission(String userId, UserActions action) {
         log.debug("Adding action {} to user {}", action, userId);

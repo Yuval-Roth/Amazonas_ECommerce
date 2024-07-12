@@ -57,6 +57,7 @@ public class API {
         return switch (endpoint) {
             case "getuserpermissions" -> permissionsService.getUserPermissions(body);
             case "getguestpermissions" -> permissionsService.getGuestPermissions(body);
+            case "isadmin" -> permissionsService.isAdmin(body);
             default -> "Invalid endpoint";
         };
     }
@@ -83,6 +84,7 @@ public class API {
     private String forwardStores(String endpoint, String body) {
         return switch(endpoint) {
             case "searchproductsglobally" -> storesService.searchProductsGlobally(body);
+            case "searchstoresglobally" -> storesService.searchStoresGlobally(body);
             case "searchproductsinstore" -> storesService.searchProductsInStore(body);
             case "addstore" -> storesService.addStore(body);
             case "openstore" -> storesService.openStore(body);

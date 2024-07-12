@@ -6,12 +6,9 @@ import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.Cate
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
-<<<<<<< HEAD
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-=======
 import com.amazonas.common.DiscountDTOs.*;
->>>>>>> 82acd0faecb12907b9c9794e7179b10a6cf7ebfb
 
 import java.util.LinkedList;
 import java.util.List;
@@ -55,10 +52,10 @@ public class DiscountManager {
             ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
             int index = 0;
             for (ProductWithQuantitiy product : products) {
-                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().productId(),
+                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().getProductId(),
                                                                            product.quantity(),
-                                                                           product.product().price(),
-                                                                           product.product().price());
+                                                                           product.product().getPrice(),
+                                                                           product.product().getPrice());
             }
             return productsAfterDiscounts;
         }
