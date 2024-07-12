@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.notifications;
 
+import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.repository.NotificationRepository;
 import com.amazonas.backend.repository.UserRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component("notificationController")
@@ -71,7 +73,8 @@ public class NotificationController {
     }
 
     private void validateUserExists(String receiverId) throws NotificationException {
-        if(!userRepository.userIdExists(receiverId)){
+        Optional<RegisteredUser> user = userRepository.findById(receiverId);
+        if(user.isEmpty()){
             throw new NotificationException("User does not exist.");
         }
     }

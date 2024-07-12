@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -40,10 +41,14 @@ public class ShippingServiceController {
             if(!activeShippingServices.containsKey(serviceId)){
                 return false;
             }
-            Transaction transaction = transactionRepository.getTransactionById(transactionId);
-            boolean shipped = activeShippingServices.get(serviceId).ship(transaction);
+            Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+            if(transaction.isEmpty()){
+                return false;
+            }
+
+            boolean shipped = activeShippingServices.get(serviceId).ship(transaction.get());
             if(shipped){
-                Store store = storeRepository.getStore(transaction.getStoreId());
+                Store store = storeRepository.getStore(transaction.get().getStoreId());
                 try {
                     store.setOrderShipped(transactionId);
                 } catch (StoreException e) {

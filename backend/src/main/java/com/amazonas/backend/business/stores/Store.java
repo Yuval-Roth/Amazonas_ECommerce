@@ -161,7 +161,7 @@ public class Store implements HasId<String> {
             lock.acquireRead();
             checkIfOpen();
 
-            return repository.getWaitingShipment(storeId);
+            return repository.getPendingShipment(storeId);
         } finally {
             lock.releaseRead();
         }
@@ -172,9 +172,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Transaction transaction = repository.getTransactionById(transactionId);
-            transaction.setShipped();
-            repository.updateTransaction(transaction);
+            Optional<Transaction> transaction = repository.findById(transactionId);
+            if(transaction.isEmpty()){
+                throw new StoreException("Transaction not found");
+            }
+            transaction.get().setShipped();
+            repository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }
@@ -185,9 +188,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Transaction transaction = repository.getTransactionById(transactionId);
-            transaction.setDelivered();
-            repository.updateTransaction(transaction);
+            Optional<Transaction> transaction = repository.findById(transactionId);
+            if(transaction.isEmpty()){
+                throw new StoreException("Transaction not found");
+            }
+            transaction.get().setDelivered();
+            repository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }
@@ -198,9 +204,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Transaction transaction = repository.getTransactionById(transactionId);
-            transaction.setCancelled();
-            repository.updateTransaction(transaction);
+            Optional<Transaction> transaction = repository.findById(transactionId);
+            if(transaction.isEmpty()){
+                throw new StoreException("Transaction not found");
+            }
+            transaction.get().setCancelled();
+            repository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }

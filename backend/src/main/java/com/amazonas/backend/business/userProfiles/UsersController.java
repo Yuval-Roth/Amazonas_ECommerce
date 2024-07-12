@@ -328,7 +328,7 @@ public class UsersController {
             LocalDateTime transactionTime = LocalDateTime.now();
             for (var reservation : reservations) {
                 Transaction t = reservationToTransaction(userId, reservation, transactionTime);
-                transactionRepository.addNewTransaction(t);
+                transactionRepository.save(t);
 
                 // send notifications to owners of the store
                 Store store = storeRepository.getStore(reservation.storeId());

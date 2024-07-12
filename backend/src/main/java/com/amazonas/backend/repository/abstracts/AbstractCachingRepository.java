@@ -120,7 +120,7 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
             entity.ifPresent(repo::save);
         }
     }
-    
+
     public void flushAllEntities() {
         if(cacheEnabled){
             repo.saveAll(cache.values());
