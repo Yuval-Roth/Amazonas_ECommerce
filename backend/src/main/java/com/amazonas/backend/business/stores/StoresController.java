@@ -40,15 +40,15 @@ public class StoresController {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
         Store toAdd = storeFactory.get(ownerID,name,description);
-        repository.saveStore(toAdd);
+        repository.save(toAdd);
         return toAdd.getStoreId();
     }
 
-    public boolean openStore(String storeId){
+    public boolean openStore(String storeId) throws StoreException {
         return getStore(storeId).openStore();
     }
 
-    public boolean closeStore(String storeId){
+    public boolean closeStore(String storeId) throws StoreException {
         return getStore(storeId).closeStore();
     }
 
@@ -89,19 +89,19 @@ public class StoresController {
         return getStore(storeId).getStoreProducts();
     }
 
-    public void addOwner(String username, String storeId, String logged){
+    public void addOwner(String username, String storeId, String logged) throws StoreException {
         getStore(storeId).addOwner(logged,username);
     }
 
-    public void addManager(String logged, String storeId, String username){
+    public void addManager(String logged, String storeId, String username) throws StoreException {
         getStore(storeId).addManager(logged,username);
     }
 
-    public void removeOwner(String username,String storeId, String logged){
+    public void removeOwner(String username,String storeId, String logged) throws StoreException {
         getStore(storeId).removeOwner(logged,username);
     }
 
-    public void removeManager(String logged, String storeId,String username){
+    public void removeManager(String logged, String storeId,String username) throws StoreException {
         getStore(storeId).removeManager(logged,username);
     }
 
@@ -113,14 +113,14 @@ public class StoresController {
         return getStore(storeId).removePermissionFromManager(managerId,actions);
     }
 
-    public Store getStore(String storeId){
-        return repository.getStore(storeId);
+    public Store getStore(String storeId) throws StoreException {
+        return repository.findById(storeId).orElseThrow(()->new StoreException("Store not found"));
     }
 
     public List<StoreDetails> searchStoresGlobally(String keyword) {
         List<StoreDetails> ret = new LinkedList<>();
         List<String> split = List.of(keyword.split(" "));
-        for (Store store : repository.getAllStores()){
+        for (Store store : repository.findAll()){
             for (String key : split){
                 if (store.getDetails().getStoreName().contains(key)){
                     ret.add(store.getDetails());
@@ -133,7 +133,7 @@ public class StoresController {
 
     public List<Product> searchProductsGlobally(GlobalSearchRequest request) {
         List<Product> ret = new LinkedList<>();
-        for (Store store : repository.getAllStores()) {
+        for (Store store : repository.findAllWithRatingAtLeast(request.storeRating())) {
             if (store.getStoreRating().ordinal() >= request.storeRating().ordinal()) {
                 ret.addAll(store.searchProduct(request.productSearchRequest()));
             }
@@ -141,11 +141,11 @@ public class StoresController {
         return ret;
     }
 
-    public List<Product> searchProductsInStore(String storeId, ProductSearchRequest request) {
+    public List<Product> searchProductsInStore(String storeId, ProductSearchRequest request) throws StoreException {
         return getStore(storeId).searchProduct(request);
     }
 
-    public List<StorePosition> getStoreRolesInformation(String storeId) {
+    public List<StorePosition> getStoreRolesInformation(String storeId) throws StoreException {
         return getStore(storeId).getRolesInformation();
     }
 
@@ -153,7 +153,7 @@ public class StoresController {
         return transactionRepository.getTransactionHistoryByStore(storeId);
     }
 
-    public StoreDetails getStoreDetails(String storeId) {
+    public StoreDetails getStoreDetails(String storeId) throws StoreException {
         return getStore(storeId).getDetails();
     }
 

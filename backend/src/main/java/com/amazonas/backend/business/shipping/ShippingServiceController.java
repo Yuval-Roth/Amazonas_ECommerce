@@ -48,9 +48,13 @@ public class ShippingServiceController {
 
             boolean shipped = activeShippingServices.get(serviceId).ship(transaction.get());
             if(shipped){
-                Store store = storeRepository.getStore(transaction.get().getStoreId());
+
+                Optional<Store> store = storeRepository.findById(transaction.get().getStoreId());
+                if(store.isEmpty()){
+                    return false;
+                }
                 try {
-                    store.setOrderShipped(transactionId);
+                    store.get().setOrderShipped(transactionId);
                 } catch (StoreException e) {
                     log.error("Failed to set order as shipped in store", e);
                     shipped = false;

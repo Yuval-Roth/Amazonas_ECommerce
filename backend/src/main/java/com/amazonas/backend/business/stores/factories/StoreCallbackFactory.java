@@ -17,15 +17,15 @@ public class StoreCallbackFactory {
     }
 
     public Function<Map<String,Integer>, Double> calculatePrice(String storeId){
-        return products -> storeRepository.getStore(storeId).calculatePrice(products);
+        return products -> storeRepository.findById(storeId).orElseThrow().calculatePrice(products);
     }
 
     public Function<Map<String,Integer>, Reservation> makeReservation(String storeId, String userId){
-        return products -> storeRepository.getStore(storeId).reserveProducts(products,userId);
+        return products -> storeRepository.findById(storeId).orElseThrow().reserveProducts(products,userId);
     }
 
     public Function<Reservation,Boolean> cancelReservation(String storeId){
-        return reservation ->storeRepository.getStore(storeId).cancelReservation(reservation);
+        return reservation -> storeRepository.findById(storeId).orElseThrow().cancelReservation(reservation);
     }
 
 }

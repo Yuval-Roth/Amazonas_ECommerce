@@ -331,15 +331,18 @@ public class UsersController {
                 transactionRepository.save(t);
 
                 // send notifications to owners of the store
-                Store store = storeRepository.getStore(reservation.storeId());
-                store.getOwners().forEach(ownerId -> {
+                Optional<Store> store = storeRepository.findById(reservation.storeId());
+                if(store.isEmpty()){
+                    throw new PurchaseFailedException("Store not found");
+                }
+                store.get().getOwners().forEach(ownerId -> {
                     try {
-                        notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
+                        notificationController.sendNotification("New transactionId in your store: "+store.get().getStoreName(),
                                 "Transaction id: "+t.getTransactionId(),
                                 "Amazonas",
                                 ownerId);
                     } catch (NotificationException e) {
-                        log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
+                        log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.get().getStoreName());
                     }
                 });
 
