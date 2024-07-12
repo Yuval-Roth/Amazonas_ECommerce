@@ -1,6 +1,7 @@
 package com.amazonas.backend.repository.abstracts;
 
 import com.amazonas.common.abstracts.HasId;
+import jakarta.transaction.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,6 +111,19 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
         cacheEnabled = value;
         if(!cacheEnabled) {
             clearCache();
+        }
+    }
+
+    public void flushEntity(String id) {
+        if(cacheEnabled){
+            Optional<T> entity = repo.findById(id);
+            entity.ifPresent(repo::save);
+        }
+    }
+    
+    public void flushAllEntities() {
+        if(cacheEnabled){
+            repo.saveAll(cache.values());
         }
     }
 }
