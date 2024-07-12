@@ -227,14 +227,8 @@ public class UsersController {
     public User getUser(String userId) throws UserException {
         userId = userId.toLowerCase();
 
-        try{
-            lock.acquireRead();
-            if(guests.containsKey(userId)){
-                return guests.get(userId);
-            }
-        }
-        finally {
-            lock.releaseRead();
+        if(guests.containsKey(userId)){
+            return guests.get(userId);
         }
 
         Optional<RegisteredUser> user = userRepository.findById(userId);
