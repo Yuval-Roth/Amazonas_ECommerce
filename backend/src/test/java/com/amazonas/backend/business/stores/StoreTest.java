@@ -543,7 +543,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        ProductInventory inventory = spy(new ProductInventory(productRepository));
+        ProductInventory inventory = spy(new ProductInventory(productRepository, store.getStoreId()));
         inventoryField.set(store, inventory);
         String newId = inventory.addProduct(laptop);
         inventory.setQuantity(newId, 1);
@@ -596,7 +596,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        inventoryField.set(store, new ProductInventory(productRepository));
+        inventoryField.set(store, new ProductInventory(productRepository, store.getStoreId()));
 
         AtomicInteger counter = new AtomicInteger(0);
 
@@ -620,7 +620,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        ProductInventory inventory = new ProductInventory(productRepository);
+        ProductInventory inventory = new ProductInventory(productRepository, store.getStoreId());
         inventoryField.set(store, inventory);
         String newId = inventory.addProduct(laptop);
         inventory.setQuantity(newId, 1);

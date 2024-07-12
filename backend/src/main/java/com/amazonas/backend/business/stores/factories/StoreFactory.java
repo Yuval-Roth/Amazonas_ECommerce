@@ -33,11 +33,12 @@ public class StoreFactory {
     }
 
     public Store get(String founderUserId, String storeName, String description){
-        return new Store(UUID.randomUUID().toString(),
+        String storeId = UUID.randomUUID().toString();
+        return new Store(storeId,
                 storeName,
                 description,
                 Rating.NOT_RATED,
-                new ProductInventory(productRepository),
+                new ProductInventory(productRepository, storeId),
                 new AppointmentSystem(founderUserId),
                 reservationFactory,
                 pendingReservationMonitor,

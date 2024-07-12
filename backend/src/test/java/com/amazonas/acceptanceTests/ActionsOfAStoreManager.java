@@ -6,6 +6,7 @@ import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.exceptions.NoPermissionException;
+import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
@@ -46,7 +47,7 @@ public class ActionsOfAStoreManager {
     //-------------------------permission check-------------------------
 
     @Test
-    public void testAddProduct_ValidPermissions_Success() {
+    public void testAddProduct_ValidPermissions_Success() throws StoreException {
         // Arrange
         String storeId = "store1";
         String userId = "user1";

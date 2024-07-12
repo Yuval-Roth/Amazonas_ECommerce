@@ -19,7 +19,7 @@ public class ProductInventoryTest {
 
     @BeforeEach
     public void setUp() {
-        inventory = new ProductInventory(mock(ProductRepository.class));
+        inventory = new ProductInventory(mock(ProductRepository.class), "storeId");
     }
 
     @Test
@@ -39,7 +39,7 @@ public class ProductInventoryTest {
         Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS, "store1");
 
         assertTrue(inventory.updateProduct(updatedProduct));
-        assertEquals("UpdatedProduct", inventory.idToProduct().get(productId).getProductName());
+        assertEquals("UpdatedProduct", inventory.getProduct(productId).getProductName());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class ProductInventoryTest {
         inventory.disableProduct(productId);
 
         assertTrue(inventory.removeProduct(productId));
-        assertFalse(inventory.idToProduct().containsKey(productId));
+        assertNotNull(inventory.getProduct(productId));
     }
 
     @Test

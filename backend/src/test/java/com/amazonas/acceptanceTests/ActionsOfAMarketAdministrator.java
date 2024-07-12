@@ -89,7 +89,7 @@ public class ActionsOfAMarketAdministrator {
         // Pre-register an administrator
         usersController.register("admin@example.com", "admin", "AdminPassword1!", LocalDate.now().minusYears(22));
         String adminId = "admin";
-        userRepository.getUser(adminId).equals("ADMIN");
+//        userRepository.getUser(adminId).equals("ADMIN");
 
         // Pre-register a customer
         usersController.register("customer@example.com", "customer", "CustomerPassword1!", LocalDate.now().minusYears(22));
@@ -116,7 +116,7 @@ public class ActionsOfAMarketAdministrator {
 
         // Add some transactions for the customer
         Transaction transaction = new Transaction("trans1", "store1", customerId, LocalDateTime.now(), new HashMap<>());
-        transactionRepository.addNewTransaction(transaction);
+        transactionRepository.save(transaction);
 
         // Act & Assert
         assertThrows(UserException.class, () -> {

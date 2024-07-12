@@ -3,40 +3,46 @@ package com.amazonas.backend.business.inventory;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
+import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-@Component("ProductInventory")
-@Scope("prototype")
+@Entity
 public class ProductInventory {
 
     private static final Logger log = LoggerFactory.getLogger(ProductInventory.class);
 
-    //TODO: FIX THIS ENTIRE CLASS WHEN WE HAVE A DATABASE
+    @Transient
+    private ProductRepository productRepository;
 
-    private final ProductRepository productRepository;
+    @Id
+    private final String storeId;
 
-    // TODO: REMOVE THIS WHEN WE HAVE A DATABASE
-    private final ConcurrentMap<String, Product> idToProduct;
+    @ElementCollection
     private final ConcurrentMap<String, Integer> idToQuantity;
+    @ElementCollection
     private final Set<String> disabledProductsId;
 
-    public  ProductInventory(ProductRepository productRepository){
+    public ProductInventory(ProductRepository productRepository, String storeId){
         this.productRepository = productRepository;
-        idToProduct = new ConcurrentHashMap<>();
+        this.storeId = storeId;
+        idToQuantity = new ConcurrentHashMap<>();
+        disabledProductsId = ConcurrentHashMap.newKeySet();
+    }
+
+    public ProductInventory(){
+        this.productRepository = null;
+        this.storeId = "";
         idToQuantity = new ConcurrentHashMap<>();
         disabledProductsId = ConcurrentHashMap.newKeySet();
     }
 
     public boolean nameExists(String productName){
-        return idToProduct.entrySet().stream()
-                .anyMatch((x -> x.getValue().getProductName().equalsIgnoreCase(productName)));
+        return productRepository.existsByNameAndStoreId(productName,storeId);
     }
 
     public String addProduct(Product product) throws StoreException {
@@ -46,37 +52,27 @@ public class ProductInventory {
 
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.getProductName(), product.getProductId());
-        idToProduct.put(product.getProductId(),product);
-        productRepository.saveProduct(product);
+        productRepository.save(product);
         return product.getProductId();
     }
 
     public boolean updateProduct(Product product) {
-
         log.debug("Updating product {} with id {} in inventory", product.getProductName(), product.getProductId());
-
-        // we want to make sure the object is the same object
-        // we can update it for the entire system
-        if(idToProduct.containsKey(product.getProductId())) {
-            Product product1 = idToProduct.get(product.getProductId());
-            product1.setProductName(product.getProductName());
-            product1.setCategory(product.getCategory());
-            product1.setRating(product.getRating());
-            product1.setPrice(product.getPrice());
-            product1.setDescription(product.getDescription());
-            return true;
+        if (!productRepository.existsById(product.getProductId())) {
+            return false;
         }
-        return false;
+        productRepository.save(product);
+        return true;
     }
 
     public boolean removeProduct(String productId) throws StoreException {
         log.debug("Removing product with id {} from inventory", productId);
 
-        if(!idToProduct.containsKey(productId)){
+        if(! productRepository.existsById(productId)){
             throw new StoreException("product wasn't removed - no product in system");
         }
 
-        idToProduct.remove(productId);
+        productRepository.deleteById(productId);
         idToQuantity.remove(productId);
         disabledProductsId.remove(productId);
         return true;
@@ -109,18 +105,18 @@ public class ProductInventory {
     }
 
     public List<Product> getAllAvailableProducts(){
-        return idToProduct.values().stream()
-                .filter(product -> !disabledProductsId.contains(product.getProductId())
-                                    && idToQuantity.get(product.getProductId()) > 0)
-                .toList();
+        List<Product> products = new LinkedList<>();
+        productRepository.findAllByStoreId(storeId).forEach(product->{
+            if(!disabledProductsId.contains(product.getProductId())
+                    && idToQuantity.get(product.getProductId()) > 0){
+                products.add(product);
+            }
+        });
+        return products;
     }
 
     public Product getProduct(String ProductID) {
-        return productRepository.getProduct(ProductID);
-    }
-  
-    public Map<String,Product> idToProduct() {
-        return idToProduct;
+        return productRepository.findById(ProductID).orElse(null);
     }
 
     /**
@@ -131,7 +127,15 @@ public class ProductInventory {
         Map<Boolean, List<Product>> map = new HashMap<>();
         map.put(true, new LinkedList<>());
         map.put(false, new LinkedList<>());
-        idToProduct.forEach((key, value) -> map.get(!disabledProductsId.contains(key)).add(value));
+
+        productRepository.findAllByStoreId(storeId).forEach(product ->
+                map
+                    .get(!disabledProductsId.contains(product.getProductId()))
+                    .add(product));
         return map;
+    }
+
+    public void setProductRepository(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 }

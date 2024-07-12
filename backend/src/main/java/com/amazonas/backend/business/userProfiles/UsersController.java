@@ -292,7 +292,7 @@ public class UsersController {
         ShoppingCart cart = getCartWithValidation(userId);
         Map<String, Reservation> reservations = cart.reserveCart();
         final String finalUserId = userId;
-        reservations.values().forEach(r -> reservationRepository.saveReservation(finalUserId,r));
+        reservations.values().forEach(r -> reservationRepository.save(r));
         log.debug("Cart of user with id: {} reserved successfully", userId);
     }
 
@@ -301,7 +301,7 @@ public class UsersController {
         try{
             lock.acquireWrite();
 
-            List<Reservation> reservations = reservationRepository.getReservations(userId);
+            List<Reservation> reservations = reservationRepository.findAllById(userId);
             if(reservations.isEmpty()){
                 log.debug("No reservations to pay for user with id: {}", userId);
                 throw new PurchaseFailedException("No reservations to pay for");
@@ -314,7 +314,7 @@ public class UsersController {
                 final String finalUserId = userId;
                 reservations.forEach(r -> {
                     r.cancelReservation();
-                    reservationRepository.removeReservation(finalUserId,r);
+                    reservationRepository.deleteReservation(finalUserId,r);
                 });
                 log.debug("Payment failed");
                 throw new PurchaseFailedException("Payment failed");
@@ -368,7 +368,7 @@ public class UsersController {
         try{
             lock.acquireWrite();
 
-            List<Reservation> reservations = reservationRepository.getReservations(userId);
+            List<Reservation> reservations = reservationRepository.findAllById(userId);
             if(reservations.isEmpty()){
                 log.debug("No reservations to cancel for user with id: {}", userId);
                 return false;
@@ -377,7 +377,7 @@ public class UsersController {
             final String finalUserId = userId;
             reservations.forEach(r -> {
                 r.cancelReservation();
-                reservationRepository.removeReservation(finalUserId,r);
+                reservationRepository.deleteReservation(finalUserId,r);
             });
 
             log.debug("The purchase canceled for user with id: {}", userId);
@@ -390,13 +390,16 @@ public class UsersController {
     // ============================= HELPER METHODS ================================== |
     // =============================================================================== |
 
-    private Transaction reservationToTransaction(String userId, Reservation reservation, LocalDateTime transactionTime) {
+    private Transaction reservationToTransaction(String userId, Reservation reservation, LocalDateTime transactionTime) throws PurchaseFailedException {
         String transactionId = UUID.randomUUID().toString();
         Map<Product,Integer> productToQuantity = new HashMap<>();
-        reservation.productIdToQuantity().forEach((productId, quantity) -> {
-            Product product = productRepository.getProduct(productId);
-            productToQuantity.put(product, quantity);
-        });
+        for (var entry : reservation.productIdToQuantity().entrySet()) {
+            Optional<Product> product = productRepository.findById(entry.getKey());
+            if (product.isEmpty()) {
+                throw new PurchaseFailedException("Product not found");
+            }
+            productToQuantity.put(product.get(), entry.getValue());
+        }
         return new Transaction(transactionId,
                 reservation.storeId(),
                 userId,

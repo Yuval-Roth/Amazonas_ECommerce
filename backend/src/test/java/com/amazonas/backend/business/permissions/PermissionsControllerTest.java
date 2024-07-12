@@ -5,8 +5,10 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
-import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,15 +21,15 @@ class PermissionsControllerTest {
     private static final String STORE_ID = "store1";
     private static final UserActions USER_ACTION = UserActions.ADD_TO_SHOPPING_CART;
     private static final StoreActions STORE_ACTION = StoreActions.ADD_PRODUCT;
-    private final PermissionsProfile profile;
+    private final UserPermissionsProfile profile;
     private final PermissionsController pc;
 
     public PermissionsControllerTest() {
         PermissionsProfileRepository repository = mock(PermissionsProfileRepository.class);
         DefaultPermissionsProfile mockProfile = mock(DefaultPermissionsProfile.class);
         pc = new PermissionsController(mockProfile, mockProfile,mock(AdminPermissionsProfile.class), repository);
-        profile = mock(PermissionsProfile.class);
-        when(repository.getPermissionsProfile(USER_ID)).thenReturn(profile);
+        profile = mock(UserPermissionsProfile.class);
+        when(repository.findById(USER_ID)).thenReturn(Optional.of(profile));
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,8 +32,8 @@ class NotificationControllerTest {
         receiverId = "receiverId";
         repository = mock(NotificationRepository.class);
         userRepository = mock(UserRepository.class);
-        when(userRepository.userIdExists(senderId)).thenReturn(true);
-        when(userRepository.userIdExists(receiverId)).thenReturn(true);
+        when(userRepository.existsById(senderId)).thenReturn(true);
+        when(userRepository.existsById(receiverId)).thenReturn(true);
         notification = new Notification(notificationId, "title", "message", null ,receiverId, receiverId);
         notificationController = new NotificationController(repository,userRepository);
         notificationId = "notificationId";
@@ -45,13 +46,13 @@ class NotificationControllerTest {
 
     @Test
     void sendNotificationReceiverIdDoesNotExist() {
-        when(userRepository.userIdExists(receiverId)).thenReturn(false);
+        when(userRepository.existsById(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.sendNotification("title", "message", receiverId, receiverId));
     }
 
     @Test
     void setReadValueGood() {
-        when(repository.findById(notificationId)).thenReturn(notification);
+        when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         assertDoesNotThrow(()->notificationController.setReadValue(notificationId, true));
     }
 
@@ -71,7 +72,7 @@ class NotificationControllerTest {
 
     @Test
     void getUnreadNotificationsReceiverIdDoesNotExist() {
-        when(userRepository.userIdExists(receiverId)).thenReturn(false);
+        when(userRepository.existsById(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.getUnreadNotifications(receiverId));
     }
 
@@ -85,13 +86,13 @@ class NotificationControllerTest {
 
     @Test
     void getNotificationsReceiverIdDoesNotExist() {
-        when(userRepository.userIdExists(receiverId)).thenReturn(false);
+        when(userRepository.existsById(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.getNotifications(receiverId, 10));
     }
 
     @Test
     void deleteNotificationGood() {
-        when(repository.findById(notificationId)).thenReturn(notification);
+        when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         assertDoesNotThrow(()->notificationController.deleteNotification(notificationId));
     }
 

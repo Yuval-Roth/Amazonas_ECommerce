@@ -17,16 +17,16 @@ public class ReservationRepository {
         reservationLock = new ReadWriteLock();
     }
 
-    public void saveReservation(String userId, Reservation reservation) {
+    public void save(Reservation reservation) {
         reservationLock.acquireWrite();
         try {
-            reservationCache.computeIfAbsent(userId, _ -> new LinkedList<>()).add(reservation);
+            reservationCache.computeIfAbsent(reservation.getId(), _ -> new LinkedList<>()).add(reservation);
         } finally {
             reservationLock.releaseWrite();
         }
     }
 
-    public List<Reservation> getReservations(String userId){
+    public List<Reservation> findAllById(String userId){
         reservationLock.acquireRead();
         try {
             return reservationCache.getOrDefault(userId, Collections.emptyList());
@@ -35,7 +35,7 @@ public class ReservationRepository {
         }
     }
 
-    public void removeReservation(String userId, Reservation reservation) {
+    public void deleteReservation(String userId, Reservation reservation) {
         reservationLock.acquireWrite();
         try {
             reservationCache.getOrDefault(userId, Collections.emptyList()).remove(reservation);

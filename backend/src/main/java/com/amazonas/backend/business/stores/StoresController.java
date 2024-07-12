@@ -2,18 +2,18 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
-import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
-import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
-import com.amazonas.backend.repository.ProductRepository;
-import com.amazonas.common.dtos.Product;
-import com.amazonas.common.dtos.StoreDetails;
-import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
-import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.dtos.Transaction;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
 import com.amazonas.common.requests.stores.ProductSearchRequest;
 import org.springframework.stereotype.Component;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component("storesController")
 public class StoresController {
@@ -158,10 +159,11 @@ public class StoresController {
     }
 
     public Product getProduct(String productId) throws StoreException {
-        if(productRepository.getProduct(productId) == null){
+        Optional<Product> product = productRepository.findById(productId);
+        if(product.isEmpty()){
             throw new StoreException("Product not found");
         }
-        return productRepository.getProduct(productId);
+        return product.get();
     }
 
     public String addDiscountRuleByCFG(String storeId,String cfg) throws StoreException, DiscountPolicyException {

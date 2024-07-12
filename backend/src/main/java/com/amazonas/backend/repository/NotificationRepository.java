@@ -1,42 +1,28 @@
 package com.amazonas.backend.repository;
 
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.abstracts.CrudCollection;
+import com.amazonas.backend.repository.crudCollections.NotificationCrudCollection;
 import com.amazonas.common.dtos.Notification;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @Component("notificationRepository")
 public class NotificationRepository extends AbstractCachingRepository<Notification> {
 
-    private final Map<String,Notification> notifications;//TODO: remove this when we have a real database
-    private final Map<String, List<Notification>> receiverIdToNotifications;
+    private final NotificationCrudCollection repo;
 
-    public NotificationRepository(CrudCollection<Notification> repo) {
+    public NotificationRepository(NotificationCrudCollection repo) {
         super(repo);
-        notifications = new HashMap<>();
-        receiverIdToNotifications = new HashMap<>();
-    }
-
-    //TODO: replace these methods with the real database calls
-
-    public void insert(Notification notification) {
-        notifications.put(notification.notificationId(),notification);
-        receiverIdToNotifications.computeIfAbsent(notification.receiverId(), k -> new LinkedList<>()).add(notification);
-    }
-
-    public Notification findById(String notificationId) {
-        return notifications.get(notificationId);
+        this.repo = repo;
     }
 
     public List<Notification> findUnreadByReceiverId(String receiverId) {
-        return receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
-                .filter(n -> !n.read())
-                .toList();
+        List<Notification> unread = new LinkedList<>();
+        repo.findUnreadByReceiverId(receiverId).forEach(unread::add);
+        return unread;
     }
 
     public List<Notification> findByReceiverId(String receiverId, Integer limit) {
@@ -44,14 +30,12 @@ public class NotificationRepository extends AbstractCachingRepository<Notificati
     }
 
     public List<Notification> findByReceiverId(String receiverId, Integer limit, Integer offset) {
-        return receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
-                .skip(offset)
-                .limit(limit)
-                .toList();
-    }
-
-    public void delete(String notificationId) {
-        Notification n = notifications.remove(notificationId);
-        receiverIdToNotifications.get(n.receiverId()).remove(n);
+        List<Notification> notifications = new LinkedList<>();
+        Iterator<Notification> iter = repo.findByReceiverId(receiverId).iterator();
+        for(; offset > 0 && iter.hasNext() ; offset--, iter.next()); {} // skip offset
+        for(; limit > 0 && iter.hasNext(); limit--) {
+            notifications.add(iter.next());
+        }
+        return notifications;
     }
 }

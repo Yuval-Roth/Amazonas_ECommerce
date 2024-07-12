@@ -36,7 +36,7 @@ public class StoresService {
         try {
             String storeId = request.payload();
             return Response.getOk(proxy.getStoreDetails(storeId, request.userId(), request.token()));
-        } catch (NoPermissionException | AuthenticationFailedException e) {
+        } catch (NoPermissionException | AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
         }
     }
@@ -272,7 +272,7 @@ public class StoresService {
             String storeId = JsonUtils.deserialize(request.payload(), String.class);
             List<StorePosition> result = proxy.getStoreRolesInformation(storeId, request.userId(), request.token());
             return Response.getOk(result);
-        } catch (NoPermissionException | AuthenticationFailedException e) {
+        } catch (NoPermissionException | AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
         }
     }

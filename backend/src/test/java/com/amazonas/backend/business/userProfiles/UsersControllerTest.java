@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -78,25 +79,25 @@ class UsersControllerTest {
 
     @Test
     void registerGood() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
         assertDoesNotThrow(()-> usersController.register(EMAIL, USER_ID, PASSWORD, BIRTH_DATE));
     }
 
     @Test
     void registerUserIdAlreadyExists() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
         assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, PASSWORD, BIRTH_DATE));
     }
 
     @Test
     void registerBadEmail() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
         assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, "badEmail", BIRTH_DATE));
     }
 
     @Test
     void registerBadPassword() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
         assertThrows(UserException.class, ()-> usersController.register(EMAIL,USER_ID,"badpassword", BIRTH_DATE));
     }
 
@@ -110,26 +111,26 @@ class UsersControllerTest {
 
     @Test
     void loginToRegisteredGood() {
-        User user = new RegisteredUser(USER_ID, EMAIL, BIRTH_DATE);
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        when(userRepository.getUser(USER_ID)).thenReturn(user);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+        RegisteredUser user = new RegisteredUser(USER_ID, EMAIL, BIRTH_DATE);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
 
         assertDoesNotThrow(()-> usersController.loginToRegistered("guestId", USER_ID));
     }
 
     @Test
     void loginToRegisteredUserDoesNotExist() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
         assertThrows(UserException.class, ()-> usersController.loginToRegistered("guestId", USER_ID));
     }
 
     @Test
     void logoutGood() {
-        User user = mock(User.class);
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
-        when(userRepository.getUser(USER_ID)).thenReturn(user);
+        RegisteredUser user = mock(RegisteredUser.class);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(cart.mergeGuestCartWithRegisteredCart(any())).thenReturn(cart);
         when(cart.userId()).thenReturn(USER_ID);
 
@@ -140,7 +141,7 @@ class UsersControllerTest {
 
     @Test
     void logoutUserDoesNotExist() {
-        when(userRepository.userIdExists(USER_ID)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
         assertThrows(UserException.class, ()-> usersController.logout(USER_ID));
     }
 
@@ -159,27 +160,27 @@ class UsersControllerTest {
     @Test
     void startPurchaseGood() {
         Map<String,Reservation> reservations = Map.of("storeId", mock(Reservation.class));
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(assertDoesNotThrow(() -> cart.reserveCart())).thenReturn(reservations);
         assertDoesNotThrow(()-> usersController.startPurchase(USER_ID));
     }
 
     @Test
     void startPurchaseUserDoesNotExist() {
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(null);
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.empty());
         assertThrows(UserException.class, ()-> usersController.startPurchase(USER_ID));
     }
 
     @Test
     void payForPurchaseGood() {
-        User user = mock(User.class);
+        RegisteredUser user = mock(RegisteredUser.class);
         PaymentMethod paymentMethod = mock(PaymentMethod.class);
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of());
-        when(reservationRepository.getReservations(USER_ID)).thenReturn(List.of(reservation));
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        when(userRepository.getUser(USER_ID)).thenReturn(user);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+        when(reservationRepository.findAllById(USER_ID)).thenReturn(List.of(reservation));
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(cart.getTotalPrice()).thenReturn(10.0);
         when(user.getPaymentMethod()).thenReturn(paymentMethod);
         when(paymentMethod.getDetails()).thenReturn("details");
@@ -190,14 +191,14 @@ class UsersControllerTest {
 
     @Test
     void payForPurchaseChargeFails() {
-        User user = mock(User.class);
+        RegisteredUser user = mock(RegisteredUser.class);
         PaymentMethod paymentMethod = mock(PaymentMethod.class);
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of());
-        when(reservationRepository.getReservations(USER_ID)).thenReturn(List.of(reservation));
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        when(userRepository.getUser(USER_ID)).thenReturn(user);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+        when(reservationRepository.findAllById(USER_ID)).thenReturn(List.of(reservation));
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(cart.getTotalPrice()).thenReturn(10.0);
         when(user.getPaymentMethod()).thenReturn(paymentMethod);
         when(paymentMethod.getDetails()).thenReturn("details");
@@ -208,7 +209,7 @@ class UsersControllerTest {
 
     @Test
     void payForPurchaseUserDoesNotExist() {
-        when(userRepository.getUser(USER_ID)).thenReturn(null);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
         assertThrows(UserException.class, ()-> usersController.payForPurchase(USER_ID));
     }
 
@@ -227,8 +228,8 @@ class UsersControllerTest {
         Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
         baskets.put("storeId", basket);
 
-        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
 
         AtomicInteger counter = new AtomicInteger(0);
 
@@ -247,109 +248,9 @@ class UsersControllerTest {
         service.awaitTermination(1, TimeUnit.SECONDS);
 
         // Verify that startPurchase was called twice
-        verify(shoppingCartRepository, times(2)).getCart(USER_ID);
+        verify(shoppingCartRepository, times(2)).findById(USER_ID);
 
         // Check that one of the purchases failed
         assertEquals(1, counter.get());
     }
-
-//    @SuppressWarnings("unchecked")
-//    @Test
-//    void testConcurrentCancelPurchase() throws IllegalAccessException, NoSuchFieldException, InterruptedException {
-//
-//        // setup
-//
-//        ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
-//        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
-//        Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
-//        basketsField.setAccessible(true);
-//        Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
-//        baskets.put("storeId", basket);
-//        Reservation reservation = new Reservation(USER_ID, "reservationId", "storeId", Map.of(), null, _->true, basket::unReserve);
-//
-//        Map<String,Reservation> reservations = new HashMap<>(){{put(USER_ID, reservation);}};
-//        when(reservationRepository.getReservations(USER_ID)).then(_-> reservations.get(USER_ID));
-//        doAnswer(_->{
-//            reservations.remove(USER_ID);
-//            return null;
-//        }).when(reservationRepository).removeReservation(USER_ID, reservation);
-//
-//
-//        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-//        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
-//
-//        // test
-//
-//        AtomicInteger counter = new AtomicInteger(0);
-//
-//        ExecutorService service = Executors.newFixedThreadPool(2);
-//        Runnable test = () -> {
-//            try {
-//                if(usersController.cancelPurchase(USER_ID)){
-//                    counter.incrementAndGet();
-//                }
-//            } catch (UserException e) {
-//                fail("UserException thrown when it shouldn't have been");
-//            }
-//        };
-//
-//        service.submit(test);
-//        service.submit(test);
-//        service.shutdown();
-//        service.awaitTermination(1, TimeUnit.SECONDS);
-//
-//        // Verify that cancelPurchase was called twice
-//        verify(reservationRepository, times(2)).getReservations(USER_ID);
-//
-//        // Check that one of the cancellations failed
-//        assertEquals(1, counter.get());
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    @Test
-//    void testConcurrentPayForPurchase() throws IllegalAccessException, NoSuchFieldException {
-//        ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
-//        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
-//        Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
-//        basketsField.setAccessible(true);
-//        Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
-//        baskets.put("storeId", basket);
-//        Reservation reservation = new Reservation(USER_ID,
-//                "reservationId",
-//                "storeId",
-//                Map.of(),
-//                null,
-//                _->true,
-//                basket::unReserve);
-//
-//
-//        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-//        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
-//
-//        AtomicInteger counter = new AtomicInteger(0);
-//
-//        ExecutorService service = Executors.newFixedThreadPool(2);
-//        Runnable test = () -> {
-//            try {
-//                usersController.payForPurchase(USER_ID);
-//            } catch (UserException | PurchaseFailedException e) {
-//                counter.incrementAndGet();
-//            }
-//        };
-//
-//        service.submit(test);
-//        service.submit(test);
-//        service.shutdown();
-//        try {
-//            service.awaitTermination(1, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // Verify that payForPurchase was called twice
-//        verify(paymentService, times(2)).charge(any(),any());
-//
-//        // Check that one of the payments failed
-//        assertEquals(1, counter.get());
-//    }
 }

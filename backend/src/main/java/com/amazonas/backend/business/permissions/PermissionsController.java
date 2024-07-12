@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
@@ -154,7 +155,7 @@ public class PermissionsController {
     private void registerUser(String userId, PermissionsProfile profile) {
 
         if(profile instanceof UserPermissionsProfile userP){
-            repository.addUser(userId, userP);
+            repository.save(userP);
         } else {
             if(inMemoryProfiles.containsKey(userId)) {
                 log.error("User {} already registered", userId);
@@ -179,25 +180,31 @@ public class PermissionsController {
         } finally {
             lock.releaseWrite();
         }
-        var removed = repository.removeUser(userId);
-
-        if(removed == null) {
+        if(!repository.existsById(userId)) {
             log.error(failMessage);
             throw new IllegalArgumentException(failMessage);
         }
+        repository.deleteById(userId);
     }
 
     @NonNull
     public PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
-        lock.acquireRead();
-        PermissionsProfile profile = repository.getPermissionsProfile(userId);
-        lock.releaseRead();
-        if(profile == null) {
+        try{
+            lock.acquireRead();
+            if(inMemoryProfiles.containsKey(userId)) {
+                return inMemoryProfiles.get(userId);
+            }
+        } finally {
+            lock.releaseRead();
+        }
+
+        Optional<UserPermissionsProfile> profile = repository.findById(userId);
+        if(profile.isEmpty()) {
             log.error("User not registered");
             throw new IllegalArgumentException("User not registered");
         }
-        return profile;
+        return profile.get();
     }
 
     public PermissionsProfile getGuestPermissionsProfile() {

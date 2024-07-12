@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,7 +67,7 @@ public class PurchaseTests {
     private UsersController usersController;
     private ShoppingCart shoppingCart;
     private Product product;
-    private User user;
+    private RegisteredUser user;
     private ShippingServiceController shippingServiceController;
     private ShippingService shippingService;
     private Transaction transaction;
@@ -82,17 +83,19 @@ public class PurchaseTests {
         pendingReservationMonitor = mock(PendingReservationMonitor.class);
         permissionsController = mock(PermissionsController.class);
         transactionRepository = spy(new TransactionRepository(mock(TransactionCrudCollection.class)){
+
             @Override
-            public void addNewTransaction(Transaction t) {
+            public <S extends Transaction> S save(S t) {
                 transaction = t;
+                return t;
             }
 
             @Override
-            public Transaction getTransactionById(String transactionId) {
-                if(transaction.getTransactionId().equals(transactionId)){
-                    return transaction;
+            public Optional<Transaction> findById(String id) {
+                if(transaction.getTransactionId().equals(id)){
+                    return Optional.of(transaction);
                 }
-                return null;
+                return Optional.empty();
             }
         });
         shoppingCartRepository = mock(ShoppingCartRepository.class);
@@ -100,9 +103,10 @@ public class PurchaseTests {
         // Real instances
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         reservationFactory = new ReservationFactory(storeCallbackFactory, shoppingCartRepository);
-        inventory = new ProductInventory(productRepository);
+        String storeId = "storeId";
+        inventory = new ProductInventory(productRepository, storeId);
         store = new Store(
-                "storeId",
+                storeId,
                 "storeName",
                 "storeDescription",
                 Rating.FIVE_STARS,
@@ -148,10 +152,10 @@ public class PurchaseTests {
         user = new RegisteredUser(USER_ID, "email@email.com", LocalDate.now().minusYears(22));
 
         // ============== Mocks configuration ============== |
-        when(storeRepository.getStore(STORE_ID)).thenReturn(store);
-        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(shoppingCart);
-        when(productRepository.getProduct(PRODUCT_ID)).thenReturn(product);
-        when(userRepository.getUser(USER_ID)).thenReturn(user);
+        when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
+        when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(shoppingCart));
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
     }
 
@@ -175,7 +179,7 @@ public class PurchaseTests {
         // check that the product quantity has changed
         assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
         // check that the reservation was saved
-        verify(reservationRepository,times(1)).saveReservation(any(),any());
+        verify(reservationRepository,times(1)).save(any());
 
         // ================== Test execution ================== |
         assertThrows(PurchaseFailedException.class, ()-> usersController.payForPurchase(USER_ID));
@@ -186,11 +190,11 @@ public class PurchaseTests {
         // check that the product remained in the basket
         assertEquals(5, basket.getProducts().get(PRODUCT_ID));
         // check that the transactionId was not created
-        verify(transactionRepository,times(0)).addNewTransaction(any());
+        verify(transactionRepository,times(0)).save(any());
         // check that the notification was not sent
         assertDoesNotThrow(()-> verify(notificationController, times(0)).sendNotification(any(),any(),any(),any()));
         // check that the cart was not reset
-        verify(shoppingCartRepository,times(0)).saveCart(any());
+        verify(shoppingCartRepository,times(0)).save(any());
         // check that the product quantity returned to the initial value
         assertEquals(10, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
         // check that the store basket reservation flag was reset
@@ -219,7 +223,7 @@ public class PurchaseTests {
         // check that the store basket was not reserved
         assertFalse(basket.isReserved());
         // check that no reservations were saved
-        verify(reservationRepository, times(0)).saveReservation(any(),any());
+        verify(reservationRepository, times(0)).save(any());
     }
 
     @Test
@@ -243,15 +247,15 @@ public class PurchaseTests {
         // check that the product quantity has changed
         assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
         // check that the reservation was saved
-        verify(reservationRepository,times(1)).saveReservation(any(),any());
+        verify(reservationRepository,times(1)).save(any());
         // pay for the purchase
         assertDoesNotThrow(()->usersController.payForPurchase(USER_ID));
         // check that the payment was attempted
         verify(paymentService,times(1)).charge(any(),any());
         // check that a transactionId was created
-        verify(transactionRepository,times(1)).addNewTransaction(any());
+        verify(transactionRepository,times(1)).save(any());
         // check that the shopping cart was reset
-        verify(shoppingCartRepository,times(1)).saveCart(any());
+        verify(shoppingCartRepository,times(1)).save(any());
 
         // ================== Test execution ================== |
         assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.getTransactionId(),SHIPPING_SERVICE_ID)));
@@ -260,7 +264,7 @@ public class PurchaseTests {
         // check that the shipping was attempted
         verify(shippingService,times(1)).ship(any());
         // check that the transactionId was not updated
-        verify(transactionRepository,times(0)).updateTransaction(any());
+        verify(transactionRepository,times(0)).save(any());
         // check that the transactionId is not marked as shipped
         assertEquals(transaction.state(), TransactionState.PENDING_SHIPMENT);
         // check that the product quantity was not updated

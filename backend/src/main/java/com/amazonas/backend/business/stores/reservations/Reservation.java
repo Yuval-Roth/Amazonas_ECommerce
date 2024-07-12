@@ -1,14 +1,16 @@
 package com.amazonas.backend.business.stores.reservations;
 
+import com.amazonas.common.abstracts.HasId;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class Reservation {
+public class Reservation implements HasId<String> {
 
-    private final String userId;
     private final String reservationId;
+    private final String userId;
     private final String storeId;
     private final Map<String, Integer> productIdToQuantity;
     private final LocalDateTime expirationDate;
@@ -110,5 +112,10 @@ public class Reservation {
     @Override
     public int hashCode() {
         return Objects.hashCode(reservationId);
+    }
+
+    @Override
+    public String getId() {
+        return userId;
     }
 }

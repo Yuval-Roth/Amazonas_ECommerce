@@ -34,15 +34,16 @@ public class NotificationController {
                 LocalDateTime.now(),
                 senderId,
                 receiverId);
-        repo.insert(notification);
+        repo.save(notification);
     }
 
     public void setReadValue(String notificationId, boolean read) throws NotificationException {
-        Notification notification = repo.findById(notificationId);
-        if(notification == null){
+        Optional<Notification> notification = repo.findById(notificationId);
+        if(notification.isEmpty()){
             throw new NotificationException("Notification does not exist.");
         }
-        notification.setRead(read);
+        notification.get().setRead(read);
+        repo.save(notification.get());
     }
 
     public List<Notification> getUnreadNotifications(String receiverId) throws NotificationException {
@@ -64,12 +65,11 @@ public class NotificationController {
     }
 
     public void deleteNotification(String notificationId) throws NotificationException {
-        Notification notification = repo.findById(notificationId);
-        if(notification == null){
+        if(! repo.existsById(notificationId)){
             throw new NotificationException("Notification does not exist.");
         }
 
-        repo.delete(notificationId);
+        repo.deleteById(notificationId);
     }
 
     private void validateUserExists(String receiverId) throws NotificationException {

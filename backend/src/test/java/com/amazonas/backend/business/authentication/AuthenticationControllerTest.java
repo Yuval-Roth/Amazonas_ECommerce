@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,7 +28,7 @@ class AuthenticationControllerTest {
         password = "testPassword";
         encoder = new BCryptPasswordEncoder();
         hashedPassword = encoder.encode(password);
-        when(ucr.getHashedPassword(userId.toLowerCase())).thenReturn(hashedPassword);
+        when(ucr.findById(userId.toLowerCase())).thenReturn(Optional.of(new UserCredentials(userId, hashedPassword)));
 
         authenticationController = new AuthenticationController(ucr);
     }

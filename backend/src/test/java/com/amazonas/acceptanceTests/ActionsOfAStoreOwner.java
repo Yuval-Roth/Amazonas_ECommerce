@@ -99,7 +99,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String storeManagerUserId = "storeManager1";
         String validToken = "validToken";
-        ProductInventory inventory = new ProductInventory(productRepository);
+        ProductInventory inventory = new ProductInventory(productRepository, "storeId");
         Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
@@ -151,7 +151,7 @@ public class ActionsOfAStoreOwner {
     //-------------------------Appointing store owner-------------------------
 
     @Test
-    void testAppointStoreOwner_PositiveCase() {
+    void testAppointStoreOwner_PositiveCase() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String newOwnerUserId = "newOwner";
@@ -192,7 +192,7 @@ public class ActionsOfAStoreOwner {
     }
 
     @Test
-    void testAppointStoreOwner_AlternativeCase_RepeatRequest() {
+    void testAppointStoreOwner_AlternativeCase_RepeatRequest() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String newOwnerUserId = "newOwner";
@@ -219,7 +219,7 @@ public class ActionsOfAStoreOwner {
     //-------------------------Appointing store manager-------------------------
 
     @Test
-    void testAppointStoreManager_PositiveCase() {
+    void testAppointStoreManager_PositiveCase() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String newManagerUserId = "newManager";
@@ -260,7 +260,7 @@ public class ActionsOfAStoreOwner {
     }
 
     @Test
-    void testAppointStoreManager_AlternativeCase_RepeatRequest() {
+    void testAppointStoreManager_AlternativeCase_RepeatRequest() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String newManagerUserId = "newManager";
@@ -398,7 +398,7 @@ public class ActionsOfAStoreOwner {
     //-------------------------View workers and permissions -------------------------
 
     @Test
-    void testViewWorkersAndPermissions_PositiveCase() {
+    void testViewWorkersAndPermissions_PositiveCase() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String validToken = "validToken";
@@ -432,7 +432,7 @@ public class ActionsOfAStoreOwner {
     }
 
     @Test
-    void testViewWorkersAndPermissions_AlternativeCase_OtherWorkers() {
+    void testViewWorkersAndPermissions_AlternativeCase_OtherWorkers() throws StoreException {
         // Arrange
         String storeOwnerUserId = "storeOwner1";
         String validToken = "validToken";

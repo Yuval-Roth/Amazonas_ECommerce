@@ -152,7 +152,7 @@ public class StoreProxy extends ControllerProxy {
         return real.searchProductsInStore(storeId, request);
     }
 
-    public List<StorePosition> getStoreRolesInformation(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+    public List<StorePosition> getStoreRolesInformation(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.VIEW_ROLES_INFORMATION);
         return real.getStoreRolesInformation(storeId);
@@ -164,7 +164,7 @@ public class StoreProxy extends ControllerProxy {
         return real.getStoreTransactionHistory(storeId);
     }
 
-    public StoreDetails getStoreDetails(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+    public StoreDetails getStoreDetails(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.VIEW_STORES);
         return real.getStoreDetails(storeId);

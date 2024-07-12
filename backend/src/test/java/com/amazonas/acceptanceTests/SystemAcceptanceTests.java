@@ -28,6 +28,7 @@ import org.mockito.Mock;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -131,7 +132,7 @@ public class SystemAcceptanceTests {
         String hashedPassword = simpleHash(correctAdminPassword);
         UserCredentials adminUser = new UserCredentials(adminUserId, hashedPassword);
         authController.createUser(adminUser);
-        when(repository.getHashedPassword(adminUserId)).thenReturn(hashedPassword);
+        when(repository.findById(adminUserId)).thenReturn(Optional.of(adminUser));
 
         // Act
         AuthenticationResponse initialResponse = authController.authenticateUser(adminUserId, wrongAdminPassword);
