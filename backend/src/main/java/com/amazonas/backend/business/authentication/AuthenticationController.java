@@ -48,7 +48,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         userid = userid.toLowerCase();
         log.debug("Generating token for guest user {}", userid);
         if(!userExists(userid)){
-            log.debug("User {} already exists", userid);
+            log.debug("User {} doesn't exist", userid);
             return new AuthenticationResponse(false,null);
         }
         return new AuthenticationResponse(true,getToken(userid));

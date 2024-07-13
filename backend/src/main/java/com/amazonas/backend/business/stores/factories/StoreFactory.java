@@ -9,6 +9,8 @@ import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.utils.Rating;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -46,4 +48,10 @@ public class StoreFactory {
                 transactionRepository);
     }
 
+    public void populateDependencies(Store store){
+        store.setPendingReservationMonitor(pendingReservationMonitor);
+        store.setPermissionsController(permissionsController);
+        store.setReservationFactory(reservationFactory);
+        store.setTransactionRepository(transactionRepository);
+    }
 }

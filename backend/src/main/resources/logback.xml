@@ -41,5 +41,5 @@
     <logger name="org.springframework" level="ERROR" />
 
     <!-- Hibernate logging configuration -->
-    <logger name="org.hibernate" level="ERROR" />
+    <logger name="org.hibernate" level="DEBUG" />
 </configuration>

@@ -15,6 +15,8 @@ import java.util.function.Function;
 @Entity
 public class StoreBasket {
     @Id
+    private String userId;
+    @Id
     private String storeId;
     private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
 
@@ -29,12 +31,13 @@ public class StoreBasket {
     public StoreBasket (Function<Map<String,Integer>,
                         Reservation> makeReservation,
                         Function<Map<String,Integer>,Double> calculatePrice,
-                        String storeId){
+                        String userId, String storeId){
 
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
         products = new HashMap<>();
         this.storeId = storeId;
+        this.userId = userId;
     }
 
     public StoreBasket() {
@@ -120,7 +123,7 @@ public class StoreBasket {
     }
 
     public StoreBasket getSerializableInstance() {
-        StoreBasket serializable = new StoreBasket(null, null, this.storeId);
+        StoreBasket serializable = new StoreBasket(null, null, this.userId, this.storeId);
         serializable.products = this.products;
         serializable.reserved = this.reserved;
         return serializable;

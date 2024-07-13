@@ -13,6 +13,7 @@ import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.utils.Rating;
+import jakarta.transaction.Transactional;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,7 @@ public class DataGenerator {
         this.paymentServiceController = paymentServiceController;
     }
 
+//    @Transactional
     public void generateData() throws Exception {
         // create users
         usersController.register("user1@email.com","user1","Password12#", LocalDate.now().minusYears(22));
@@ -139,15 +141,5 @@ public class DataGenerator {
         usersController.addProductToCart("user5",store5Id, product10.getProductId(),5);
 
         System.out.println("Data generated successfully");
-    }
-
-
-    @EventListener
-    public void handleApplicationStartedEvent(ApplicationStartedEvent event) {
-        try {
-            generateData();
-        } catch (Exception e) {
-            System.out.println("Failed to generate data: " + e.getMessage());
-        }
     }
 }

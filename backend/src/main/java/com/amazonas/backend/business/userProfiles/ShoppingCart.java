@@ -5,10 +5,7 @@ import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.utils.ReadWriteLock;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.slf4j.Logger;
@@ -24,12 +21,14 @@ public class ShoppingCart implements HasId<String> {
 
     @Transient @Cascade(CascadeType.ALL)
     private StoreBasketFactory storeBasketFactory;
-    @Id
-    private final String userId;
     @Transient @Cascade(CascadeType.ALL)
     private final ReadWriteLock lock;
+
+    @Id
+    private final String userId;
     @OneToMany
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
+
     public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
         this.storeBasketFactory = storeBasketFactory;
         this.userId = userId;
@@ -40,7 +39,7 @@ public class ShoppingCart implements HasId<String> {
     public ShoppingCart() {
         storeBasketFactory = null;
         userId = null;
-        baskets = null;
+        baskets = new HashMap<>();
         lock = new ReadWriteLock();
     }
 
@@ -203,5 +202,9 @@ public class ShoppingCart implements HasId<String> {
             serializable.baskets.put(entry.getKey(), entry.getValue().getSerializableInstance());
         }
         return serializable;
+    }
+
+    public void setStoreBasketFactory(StoreBasketFactory storeBasketFactory) {
+        this.storeBasketFactory = storeBasketFactory;
     }
 }

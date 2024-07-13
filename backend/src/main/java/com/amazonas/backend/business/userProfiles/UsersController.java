@@ -15,6 +15,8 @@ import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.ReadWriteLock;
+import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -153,6 +155,7 @@ public class UsersController {
 
     }
 
+    @Transactional
     public void loginToRegistered(String guestInitialId,String userId) throws UserException {
         userId = userId.toLowerCase();
 
@@ -258,6 +261,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.addProduct(storeId, productId,quantity);
+        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} added to the cart of user with id: {}", productId, userId);
     }
 
@@ -265,6 +269,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
+        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} removed from the cart of user with id: {}", productId, userId);
     }
 
@@ -272,6 +277,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
+        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} quantity changed in the cart of user with id: {}", productId, userId);
     }
 
@@ -287,8 +293,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         Map<String, Reservation> reservations = cart.reserveCart();
-        final String finalUserId = userId;
-        reservations.values().forEach(r -> reservationRepository.save(r));
+        reservations.values().forEach(reservationRepository::save);
         log.debug("Cart of user with id: {} reserved successfully", userId);
     }
 

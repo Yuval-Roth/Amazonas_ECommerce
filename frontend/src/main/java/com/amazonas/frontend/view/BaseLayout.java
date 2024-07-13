@@ -244,7 +244,6 @@ public abstract class BaseLayout extends AppLayout {
 
     protected void openRegisterDialog(){
         Dialog dialog = new Dialog();
-        VerticalLayout layout = new VerticalLayout();
         FormLayout formLayout = new FormLayout();
         EmailField emailField = new EmailField("Email");
         emailField.setPlaceholder("Email");
@@ -297,11 +296,18 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(headlineLayout,emailField, usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.add(headlineLayout,emailField, usernameField, passwordField, confirmPasswordField, datePicker);
         formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
-        layout.add(formLayout);
-        dialog.add(layout);
+        VerticalLayout headerLayout = new VerticalLayout();
+        headerLayout.add(formLayout);
+        HorizontalLayout footerLayout = new HorizontalLayout();
+        footerLayout.getStyle().set("margin-left", "auto");
+        footerLayout.getStyle().setMarginRight("30%");
+        footerLayout.getStyle().setMarginLeft("30%");
+        footerLayout.add(submitButton, cancelButton);
+        dialog.getHeader().add(headerLayout);
+        dialog.getFooter().add(footerLayout);
         dialog.setWidth("30%");
 
         content.add(dialog);

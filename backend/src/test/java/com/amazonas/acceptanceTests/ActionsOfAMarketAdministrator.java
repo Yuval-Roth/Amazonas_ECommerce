@@ -59,7 +59,7 @@ public class ActionsOfAMarketAdministrator {
 
     @BeforeEach
     public void setup() {
-        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo);
+        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo,storeBasketFactory);
         shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);

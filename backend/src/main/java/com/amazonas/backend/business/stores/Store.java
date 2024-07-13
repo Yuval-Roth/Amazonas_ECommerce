@@ -47,7 +47,7 @@ public class Store implements HasId<String> {
     @Transient private ReservationFactory reservationFactory;
     @Transient private PendingReservationMonitor pendingReservationMonitor;
     @Transient private PermissionsController permissionsController;
-    @Transient private TransactionRepository repository;
+    @Transient private TransactionRepository transactionRepository;
     @Transient private ReadWriteLock lock;
     @Transient private DiscountManager discountManager;
     @Transient private ProductInventory inventory;
@@ -84,7 +84,7 @@ public class Store implements HasId<String> {
         this.storeDescription = description;
         this.storeRating = rating;
         this.permissionsController = permissionsController;
-        this.repository = transactionRepository;
+        this.transactionRepository = transactionRepository;
         this.discountManager = new DiscountManager();
         this.purchasePolicyManager = new PurchasePolicyManager();
         lock = new ReadWriteLock();
@@ -101,7 +101,7 @@ public class Store implements HasId<String> {
         reservationFactory = null;
         pendingReservationMonitor = null;
         permissionsController = null;
-        repository = null;
+        transactionRepository = null;
         discountManager = null;
         lock = new ReadWriteLock();
     }
@@ -167,7 +167,7 @@ public class Store implements HasId<String> {
             lock.acquireRead();
             checkIfOpen();
 
-            return repository.getPendingShipment(storeId);
+            return transactionRepository.getPendingShipment(storeId);
         } finally {
             lock.releaseRead();
         }
@@ -178,12 +178,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Optional<Transaction> transaction = repository.findById(transactionId);
+            Optional<Transaction> transaction = transactionRepository.findById(transactionId);
             if(transaction.isEmpty()){
                 throw new StoreException("Transaction not found");
             }
             transaction.get().setShipped();
-            repository.save(transaction.get());
+            transactionRepository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }
@@ -194,12 +194,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Optional<Transaction> transaction = repository.findById(transactionId);
+            Optional<Transaction> transaction = transactionRepository.findById(transactionId);
             if(transaction.isEmpty()){
                 throw new StoreException("Transaction not found");
             }
             transaction.get().setDelivered();
-            repository.save(transaction.get());
+            transactionRepository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }
@@ -210,12 +210,12 @@ public class Store implements HasId<String> {
             lock.acquireWrite();
             checkIfOpen();
 
-            Optional<Transaction> transaction = repository.findById(transactionId);
+            Optional<Transaction> transaction = transactionRepository.findById(transactionId);
             if(transaction.isEmpty()){
                 throw new StoreException("Transaction not found");
             }
             transaction.get().setCancelled();
-            repository.save(transaction.get());
+            transactionRepository.save(transaction.get());
         } finally {
             lock.releaseWrite();
         }
@@ -663,10 +663,6 @@ public class Store implements HasId<String> {
         this.permissionsController = permissionsController;
     }
 
-    public void setRepository(TransactionRepository repository) {
-        this.repository = repository;
-    }
-
     public void setInventory(ProductInventory inventory) {
         this.inventory = inventory;
     }
@@ -682,5 +678,9 @@ public class Store implements HasId<String> {
     @Override
     public String getId() {
         return storeId;
+    }
+
+    public void setTransactionRepository(TransactionRepository transactionRepository) {
+        this.transactionRepository = transactionRepository;
     }
 }

@@ -68,9 +68,9 @@ public class ActionsOfAStoreOwner {
     @BeforeEach
     public void setup() {
 
-        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo);
-        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
+        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
+        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo,storeBasketFactory);
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         userRepository = new UserRepository(userMongo);
         authenticationController = new AuthenticationController(userCredentialsRepository);

@@ -3,47 +3,60 @@ package com.amazonas.backend.repository.abstracts;
 import com.amazonas.common.abstracts.HasId;
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AbstractCachingRepository <T extends HasId<String>> {
 
     private final Map<String, T> cache;
-    private final CrudRepository<T,String> repo;
+    private final CrudRepository<T,String> repository;
     private boolean cacheEnabled;
 
     public AbstractCachingRepository(CrudRepository<T,String> repo) {
         this.cache = new HashMap<>();
-        this.repo = repo;
+        this.repository = repo;
         this.cacheEnabled = true;
     }
 
     public <S extends T> S save(S entity) {
-        S saved = repo.save(entity);
+        repository.save(entity);
         if(cacheEnabled){
             cache.put(entity.getId(), entity);
         }
-        return saved;
+        return entity;
     }
 
     public void deleteAll(Iterable<? extends T> entities) {
-        repo.deleteAll(entities);
+        repository.deleteAll(entities);
         if(cacheEnabled){
             cache.clear();
         }
     }
 
     public Iterable<T> findAllById(Iterable<String> strings) {
-        Iterable<T> allById = repo.findAllById(strings);
         if(cacheEnabled){
-            allById.forEach(entity -> cache.put(entity.getId(), entity));
+            List<String> notInCache = new LinkedList<>();
+            List<T> toReturn = new LinkedList<>();
+            strings.forEach(id -> {
+                if(cache.containsKey(id)){
+                    toReturn.add(cache.get(id));
+                } else {
+                    notInCache.add(id);
+                }
+            });
+            if(! notInCache.isEmpty()){
+                repository.findAllById(notInCache).forEach(entity -> {
+                    cache.put(entity.getId(), entity);
+                    toReturn.add(entity);
+                });
+            }
+            return toReturn;
+        } else {
+            return repository.findAllById(strings);
         }
-        return allById;
     }
 
     public void delete(T entity) {
-        repo.delete(entity);
+        repository.delete(entity);
         if(cacheEnabled){
             cache.remove(entity.getId());
         }
@@ -53,25 +66,29 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
         if (cacheEnabled && cache.containsKey(s)) {
             return Optional.of(cache.get(s));
         }
-        return repo.findById(s);
+        return repository.findById(s);
     }
 
     public void deleteById(String s) {
-        repo.deleteById(s);
+        repository.deleteById(s);
         if(cacheEnabled){
             cache.remove(s);
         }
     }
 
     public void deleteAll() {
-        repo.deleteAll();
+        repository.deleteAll();
         if(cacheEnabled){
             cache.clear();
         }
     }
 
+    /**
+     * Returns all entities from the repository. If caching is enabled, the entities are stored in the cache.
+     * @apiNote this does not read from the cache, it always reads from the repository
+     */
     public Iterable<T> findAll() {
-        Iterable<T> all = repo.findAll();
+        Iterable<T> all = repository.findAll();
         if(cacheEnabled){
             all.forEach(entity -> cache.put(entity.getId(), entity));
         }
@@ -79,26 +96,26 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
     }
 
     public void deleteAllById(Iterable<? extends String> strings) {
-        repo.deleteAllById(strings);
+        repository.deleteAllById(strings);
         if(cacheEnabled){
             strings.forEach(cache::remove);
         }
     }
 
     public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
-        Iterable<S> saved = repo.saveAll(entities);
+        repository.saveAll(entities);
         if(cacheEnabled){
-            saved.forEach(entity -> cache.put(entity.getId(), entity));
+            entities.forEach(entity -> cache.put(entity.getId(), entity));
         }
-        return saved;
+        return entities;
     }
 
     public boolean existsById(String s) {
-        return (cacheEnabled && cache.containsKey(s)) || repo.existsById(s);
+        return (cacheEnabled && cache.containsKey(s)) || repository.existsById(s);
     }
 
     public long count() {
-        return repo.count();
+        return repository.count();
     }
 
     public void clearCache() {
@@ -116,14 +133,14 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
 
     public void flushEntity(String id) {
         if(cacheEnabled){
-            Optional<T> entity = repo.findById(id);
-            entity.ifPresent(repo::save);
+            Optional<T> entity = repository.findById(id);
+            entity.ifPresent(repository::save);
         }
     }
 
     public void flushAllEntities() {
         if(cacheEnabled){
-            repo.saveAll(cache.values());
+            repository.saveAll(cache.values());
         }
     }
 }
