@@ -144,10 +144,10 @@ public class DataGenerator {
 
     @EventListener
     public void handleApplicationStartedEvent(ApplicationStartedEvent event) {
-//        try {
-//            generateData();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            generateData();
+        } catch (Exception e) {
+            System.out.println("Failed to generate data: " + e.getMessage());
+        }
     }
 }

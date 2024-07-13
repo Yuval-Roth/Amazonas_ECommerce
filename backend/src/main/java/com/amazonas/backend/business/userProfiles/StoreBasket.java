@@ -20,11 +20,9 @@ public class StoreBasket {
 
     @ElementCollection
     private Map<String, Integer> products; // productId --> quantity
-    @Cascade(CascadeType.ALL)
-    @Transient
+    @Transient @Cascade(CascadeType.ALL)
     private final Function<Map<String,Integer>, Reservation> makeReservation;
-    @Cascade(CascadeType.ALL)
-    @Transient
+    @Transient @Cascade(CascadeType.ALL)
     private final Function<Map<String, Integer>, Double> calculatePrice;
     private boolean reserved;
 
