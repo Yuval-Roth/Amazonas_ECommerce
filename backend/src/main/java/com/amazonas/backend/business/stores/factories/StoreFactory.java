@@ -39,7 +39,7 @@ public class StoreFactory {
                 description,
                 Rating.NOT_RATED,
                 new ProductInventory(productRepository, storeId),
-                new AppointmentSystem(founderUserId),
+                new AppointmentSystem(founderUserId,storeId),
                 reservationFactory,
                 pendingReservationMonitor,
                 permissionsController,

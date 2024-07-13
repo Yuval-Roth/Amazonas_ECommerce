@@ -1,3 +1,8 @@
 package com.amazonas.backend.business.stores.storePositions;
 
-public record StorePosition(String userId, StoreRole role) { }
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+
+@Entity
+public record StorePosition(@Id String userId, @Enumerated StoreRole role) { }

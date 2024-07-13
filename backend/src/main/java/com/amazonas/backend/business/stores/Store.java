@@ -29,6 +29,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
@@ -58,7 +60,10 @@ public class Store implements HasId<String> {
     private boolean isOpen;
     private Rating storeRating;
     private String storeDescription;
-    @OneToOne private AppointmentSystem appointmentSystem;
+
+    @OneToOne
+    @Cascade(CascadeType.ALL)
+    private AppointmentSystem appointmentSystem;
 
     public Store(String storeId,
                  String storeName,

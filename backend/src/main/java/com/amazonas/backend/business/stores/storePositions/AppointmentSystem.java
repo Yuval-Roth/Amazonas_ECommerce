@@ -10,9 +10,8 @@ import java.util.Map;
 
 @Entity
 public class AppointmentSystem {
-    @Id @GeneratedValue
-    String id;
-
+    @Id
+    String storeId;
     @OneToMany
     private final Map<String, OwnerNode> managersList; // contains all the managers of the store every moment
     @OneToOne
@@ -22,12 +21,13 @@ public class AppointmentSystem {
     @Transient
     private final ReadWriteLock appointmentLock;
 
-    public AppointmentSystem(String storeFounderId) {
+    public AppointmentSystem(String storeFounderId, String storeId) {
         this.managersList = new HashMap<>();
         this.ownershipTree = new OwnerNode(storeFounderId, null);
         this.ownershipList = new HashMap<>();
         ownershipList.put(ownershipTree.getUserID(), ownershipTree);
         this.appointmentLock = new ReadWriteLock();
+        this.storeId = storeId;
     }
 
     public AppointmentSystem() {

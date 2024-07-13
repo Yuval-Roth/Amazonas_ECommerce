@@ -9,24 +9,24 @@ import java.util.List;
 @Entity
 public class OwnerNode {
 
+    @Id private final String userID;
     @OneToMany
     private List<OwnerNode> ownersChildren;
     @ElementCollection
     private List<String> managersChildren;
-    @ManyToOne
-    private final OwnerNode parent;
-    @Id private final String userID;
+//    @ManyToOne
+//    private final OwnerNode parent;
 
     public OwnerNode(String userID, OwnerNode appointee) {
         this.userID = userID;
-        this.parent = appointee;
+//        this.parent = appointee;
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
     }
 
     public OwnerNode() {
         this.userID = "";
-        this.parent = new OwnerNode("", null);
+//        this.parent = new OwnerNode("", null);
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
     }
