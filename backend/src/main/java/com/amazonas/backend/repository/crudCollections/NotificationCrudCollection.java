@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NotificationCrudCollection extends CrudRepository<Notification, String> {
-    @Query("SELECT n FROM Notification n WHERE n.receiverId = :receiverId AND n.read = false ORDER BY n.timestamp DESC")
+
+    @Query("SELECT n FROM Notification n WHERE n.receiverId = :receiverId AND n.isRead = false ORDER BY n.timestamp DESC")
     Iterable<Notification> findUnreadByReceiverId(String receiverId);
 
     @Query("SELECT n FROM Notification n WHERE n.receiverId = :receiverId ORDER BY n.timestamp DESC")

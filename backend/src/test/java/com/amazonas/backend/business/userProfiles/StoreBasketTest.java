@@ -22,7 +22,7 @@ class StoreBasketTest {
     void setUp() {
         makeReservation = mock(Function.class);
         calculatePrice = mock(Function.class);
-        storeBasket = new StoreBasket(makeReservation, calculatePrice);
+        storeBasket = new StoreBasket(makeReservation, calculatePrice,"storeId");
     }
 
     @Test

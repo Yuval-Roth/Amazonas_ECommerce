@@ -77,7 +77,7 @@ public class NotificationsView extends BaseLayout {
         if (unreadNotifications != null) {
             for (Notification notification : unreadNotifications) {
                 try {
-                    notification.setRead(true);
+                    notification.setIsRead(true);
                     NotificationRequest r = new NotificationRequest(notification.notificationId(), true);
                     appController.postByEndpoint(Endpoints.SET_READ_VALUE, r);
                 } catch (ApplicationException e) {

@@ -42,7 +42,7 @@ public class NotificationController {
         if(notification.isEmpty()){
             throw new NotificationException("Notification does not exist.");
         }
-        notification.get().setRead(read);
+        notification.get().setIsRead(read);
         repo.save(notification.get());
     }
 

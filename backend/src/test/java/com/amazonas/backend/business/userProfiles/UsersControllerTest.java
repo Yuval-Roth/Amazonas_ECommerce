@@ -222,7 +222,7 @@ class UsersControllerTest {
     void testConcurrentStartPurchase() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
 
         ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
-        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
+        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0, "storeId");
         Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
         basketsField.setAccessible(true);
         Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);

@@ -2,6 +2,8 @@ package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.common.utils.ReadWriteLock;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,6 +17,7 @@ public class AppointmentSystem {
     @OneToMany
     private final Map<String, OwnerNode> managersList; // contains all the managers of the store every moment
     @OneToOne
+    @Cascade(CascadeType.ALL)
     private final OwnerNode ownershipTree; // handle the appointment hierarchy as a tree
     @OneToMany
     private final Map<String, OwnerNode> ownershipList; //contains all the owners of the store every moment

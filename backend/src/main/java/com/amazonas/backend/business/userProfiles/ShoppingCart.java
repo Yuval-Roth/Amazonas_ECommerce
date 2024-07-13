@@ -9,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +22,11 @@ import java.util.Map;
 public class ShoppingCart implements HasId<String> {
     private static final Logger log = LoggerFactory.getLogger(ShoppingCart.class);
 
-    @Transient
+    @Transient @Cascade(CascadeType.ALL)
     private StoreBasketFactory storeBasketFactory;
     @Id
     private final String userId;
-    @Transient
+    @Transient @Cascade(CascadeType.ALL)
     private final ReadWriteLock lock;
     @OneToMany
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket

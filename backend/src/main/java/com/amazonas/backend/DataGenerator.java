@@ -28,7 +28,7 @@ public class DataGenerator {
     private final PermissionsController permissionsController;
     private final StoresController storesController;
     private final ShippingServiceController shippingServiceController;
-    private final PaymentServiceController paymentServiceController;
+    private final PaymentServiceController paymentServiceController;;
 
     public DataGenerator(UsersController usersController, AuthenticationController authenticationController, NotificationController notificationController, PermissionsController permissionsController, StoresController storesController, ShippingServiceController shippingServiceController, PaymentServiceController paymentServiceController) {
         this.usersController = usersController;
@@ -137,15 +137,17 @@ public class DataGenerator {
         usersController.addProductToCart("user4",store4Id, product8.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product9.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product10.getProductId(),5);
+
+        System.out.println("Data generated successfully");
     }
 
 
     @EventListener
     public void handleApplicationStartedEvent(ApplicationStartedEvent event) {
-        try {
-            generateData();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            generateData();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }

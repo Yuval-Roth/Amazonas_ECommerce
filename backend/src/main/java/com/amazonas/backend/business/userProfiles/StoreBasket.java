@@ -3,6 +3,8 @@ package com.amazonas.backend.business.userProfiles;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,39 +14,37 @@ import java.util.function.Function;
 
 @Entity
 public class StoreBasket {
-    @Id @GeneratedValue
-    private String id;
+    @Id
+    private String storeId;
     private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
 
     @ElementCollection
     private Map<String, Integer> products; // productId --> quantity
+    @Cascade(CascadeType.ALL)
     @Transient
     private final Function<Map<String,Integer>, Reservation> makeReservation;
+    @Cascade(CascadeType.ALL)
     @Transient
     private final Function<Map<String, Integer>, Double> calculatePrice;
     private boolean reserved;
 
     public StoreBasket (Function<Map<String,Integer>,
                         Reservation> makeReservation,
-                        Function<Map<String,Integer>,Double> calculatePrice){
+                        Function<Map<String,Integer>,Double> calculatePrice,
+                        String storeId){
 
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
         products = new HashMap<>();
+        this.storeId = storeId;
     }
 
     public StoreBasket() {
-        makeReservation = new Function<Map<String, Integer>, Reservation>() {
-            @Override
-            public Reservation apply(Map<String, Integer> stringIntegerMap) {
-                throw new UnsupportedOperationException("function not set");
-            }
+        makeReservation = _ -> {
+            throw new UnsupportedOperationException("function not set");
         };
-        calculatePrice = new Function<Map<String, Integer>, Double>() {
-            @Override
-            public Double apply(Map<String, Integer> stringIntegerMap) {
-                throw new UnsupportedOperationException("function not set");
-            }
+        calculatePrice = _ -> {
+            throw new UnsupportedOperationException("function not set");
         };
         products = new HashMap<>();
     }
@@ -122,7 +122,7 @@ public class StoreBasket {
     }
 
     public StoreBasket getSerializableInstance() {
-        StoreBasket serializable = new StoreBasket(null, null);
+        StoreBasket serializable = new StoreBasket(null, null, this.storeId);
         serializable.products = this.products;
         serializable.reserved = this.reserved;
         return serializable;

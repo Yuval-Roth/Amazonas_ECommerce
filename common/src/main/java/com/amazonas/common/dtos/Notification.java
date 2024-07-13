@@ -16,7 +16,7 @@ public class Notification implements HasId<String> {
     private final String senderId;
     private final String receiverId;
     private final LocalDateTime timestamp;
-    private boolean read;
+    private boolean isRead;
 
     public Notification(String notificationId, String title, String message, LocalDateTime timestamp, String senderId, String receiverId) {
         this.notificationId = notificationId;
@@ -53,11 +53,11 @@ public class Notification implements HasId<String> {
     }
 
     public boolean read() {
-        return read;
+        return isRead;
     }
 
-    public void setRead(boolean read) {
-        this.read = read;
+    public void setIsRead(boolean read) {
+        this.isRead = read;
     }
 
     public LocalDateTime timestamp() {
