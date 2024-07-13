@@ -15,7 +15,7 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
     @Id
     private final String userId;
     @Transient
-    private PermissionsProfile defaultProfile;
+    private DefaultPermissionsProfile defaultProfile;
     @OneToMany
     private final Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
     @ElementCollection
@@ -155,7 +155,7 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
         return userId;
     }
 
-    public void setDefaultProfile(PermissionsProfile defaultProfile) {
+    public void setDefaultProfile(DefaultPermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
     }
 

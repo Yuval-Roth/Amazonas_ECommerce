@@ -81,16 +81,18 @@ public class UsersController {
     //generate admin user
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+        String adminId = "admin";
+        String adminEmail = "admin@amazonas.com";
+        String adminPassword = generatePassword();
+        System.out.println("Admin password: " + adminPassword);
         try {
-            String adminId = "admin";
-            String adminEmail = "admin@amazonas.com";
-            String adminPassword = generatePassword();
-            System.out.println("Admin password: " + adminPassword);
             register(adminEmail, adminId, adminPassword, LocalDate.now().minusYears(22));
+        } catch (UserException _) {
+            log.debug("admin already exists in the system, updating password");
+            authenticationController.updateUser(new UserCredentials(adminId, adminPassword));
+        } finally{
+            log.debug("Registering admin as an admin");
             permissionsController.registerAdmin(adminId);
-        } catch (UserException e) {
-            log.error("Failed to generate admin user");
-            throw new RuntimeException("Failed to generate admin user");
         }
     }
 

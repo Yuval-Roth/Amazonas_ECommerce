@@ -137,9 +137,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         if(userExists(userId)){
             throw new AccessDeniedException("userId already exists");
         }
-        String password = generatePassword();
         log.debug("Adding guest credentials for userId {}", userId);
-        String hashedPassword = encoder.encode(password);
         repository.saveGuest(userId);
     }
 
@@ -213,7 +211,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     @Override
     public boolean userExists(String username) {
-        return repository.existsById(username.toLowerCase());
+        return  repository.existsById(username.toLowerCase());
     }
 
     @Override
