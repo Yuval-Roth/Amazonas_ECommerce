@@ -1,9 +1,7 @@
 package com.amazonas.common.dtos;
 
 import com.amazonas.common.abstracts.HasId;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -21,6 +19,7 @@ public final class Transaction implements HasId<String> {
     private final LocalDateTime dateOfTransaction;
     @ElementCollection
     private final Map<Product, Integer> productToQuantity;
+    @Enumerated(EnumType.STRING)
     private TransactionState state;
 
     public Transaction(String transactionId,

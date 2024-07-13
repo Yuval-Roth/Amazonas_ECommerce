@@ -59,6 +59,7 @@ public class Store implements HasId<String> {
     private Rating storeRating;
     private String storeDescription;
     @OneToOne private AppointmentSystem appointmentSystem;
+
     public Store(String storeId,
                  String storeName,
                  String description,

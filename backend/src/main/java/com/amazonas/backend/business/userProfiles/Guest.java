@@ -1,14 +1,29 @@
 package com.amazonas.backend.business.userProfiles;
 
-public class Guest extends User{
-    public Guest(String id){
-        super(id);
-    }
+import com.amazonas.backend.business.payment.PaymentMethod;
 
+public class Guest implements User{
+
+    private String id;
+    private PaymentMethod paymentMethod;
+
+    public Guest(String id){
+        this.id = id;
+    }
 
     @Override
     public String getUserId() {
-        return super.getUserId();
+        return id;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 

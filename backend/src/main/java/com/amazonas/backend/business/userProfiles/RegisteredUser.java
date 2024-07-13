@@ -1,27 +1,48 @@
 package com.amazonas.backend.business.userProfiles;
 
+import com.amazonas.backend.business.payment.PaymentMethod;
 import com.amazonas.common.abstracts.HasId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 
 import java.time.LocalDate;
 
-public class RegisteredUser extends User implements HasId<String> {
+@Entity
+public class RegisteredUser implements User, HasId<String> {
 
+    @Id
+    private String userId;
     private String email;
     private LocalDate birthDate;
+    @Transient
+    private PaymentMethod paymentMethod;
 
     public RegisteredUser(){
-        super("");
+        userId = "";
+        email = "";
+        birthDate = LocalDate.now();
     }
 
     public RegisteredUser(String userId, String email, LocalDate birthDate){
-        super(userId);
+        this.userId = userId;
         this.email = email;
         this.birthDate = birthDate;
     }
 
     @Override
     public String getUserId() {
-        return super.getUserId();
+        return userId;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public String getEmail() {

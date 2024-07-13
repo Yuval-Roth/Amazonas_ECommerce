@@ -2,17 +2,11 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.payment.PaymentMethod;
 
-public abstract class User {
+public interface User {
 
-    private String initialId;
-    private PaymentMethod paymentMethod;
+    String getUserId();
 
-    public User(String initialId){
-        this.initialId = initialId;
-    }
+    PaymentMethod getPaymentMethod();
 
-    public String getUserId(){
-        return initialId;
-    }
-    public PaymentMethod getPaymentMethod() {return paymentMethod;}
+    void setPaymentMethod(PaymentMethod paymentMethod);
 }

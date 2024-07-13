@@ -1,7 +1,7 @@
 package com.amazonas.backend.repository.abstracts;
 
 import com.amazonas.common.abstracts.HasId;
-import jakarta.transaction.Transactional;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,10 +10,10 @@ import java.util.Optional;
 public abstract class AbstractCachingRepository <T extends HasId<String>> {
 
     private final Map<String, T> cache;
-    private final CrudCollection<T> repo;
+    private final CrudRepository<T,String> repo;
     private boolean cacheEnabled;
 
-    public AbstractCachingRepository(CrudCollection<T> repo) {
+    public AbstractCachingRepository(CrudRepository<T,String> repo) {
         this.cache = new HashMap<>();
         this.repo = repo;
         this.cacheEnabled = true;
