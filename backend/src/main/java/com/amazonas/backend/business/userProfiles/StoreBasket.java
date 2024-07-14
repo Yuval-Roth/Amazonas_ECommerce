@@ -5,9 +5,10 @@ import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.repository.CompositeKey2;
 import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.dtos.StoreBasketDTO;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,9 @@ public class StoreBasket implements HasId<String> {
     private Map<String, Integer> products; // productId --> quantity
 
     @Transient /*@Cascade(CascadeType.ALL)*/
-    private final Function<Map<String,Integer>, Reservation> makeReservation;
+    private Function<Map<String,Integer>, Reservation> makeReservation;
     @Transient /*@Cascade(CascadeType.ALL)*/
-    private final Function<Map<String, Integer>, Double> calculatePrice;
+    private Function<Map<String, Integer>, Double> calculatePrice;
 
     public StoreBasket (Function<Map<String,Integer>,
                         Reservation> makeReservation,
@@ -167,5 +168,13 @@ public class StoreBasket implements HasId<String> {
 
     public boolean isEmpty() {
         return products.isEmpty();
+    }
+
+    public void setMakeReservation(Function<Map<String, Integer>, Reservation> makeReservation) {
+        this.makeReservation = makeReservation;
+    }
+
+    public void setCalculatePrice(Function<Map<String, Integer>, Double> calculatePrice) {
+        this.calculatePrice = calculatePrice;
     }
 }

@@ -127,10 +127,10 @@ public class PurchaseTests {
         notificationController = mock(NotificationController.class);
         // real instances
 
-        //TODO: MAKE THIS WORK
-        StoreBasketRepository storeBasketRepository = new StoreBasketRepository(mock(StoreBasketCrudCollection.class));
         reservationRepository = spy(new ReservationRepository());
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
+        //TODO: MAKE THIS WORK
+        StoreBasketRepository storeBasketRepository = new StoreBasketRepository(mock(StoreBasketCrudCollection.class), storeBasketFactory);
         shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory, storeBasketRepository);
         usersController = new UsersController(
                 userRepository,

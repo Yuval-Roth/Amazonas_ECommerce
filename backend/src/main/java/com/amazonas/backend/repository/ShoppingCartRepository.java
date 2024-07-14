@@ -2,10 +2,8 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.business.userProfiles.ShoppingCartFactory;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 @Component("shoppingCartRepository")

@@ -17,4 +17,9 @@ public class StoreBasketFactory {
         return new StoreBasket(storeCallbackFactory.makeReservation(storeId, userId),
                                 storeCallbackFactory.calculatePrice(storeId),userId,storeId);
     }
+
+    public void populateDependencies(StoreBasket storeBasket){
+        storeBasket.setMakeReservation(storeCallbackFactory.makeReservation(storeBasket.storeId(), storeBasket.userId()));
+        storeBasket.setCalculatePrice(storeCallbackFactory.calculatePrice(storeBasket.storeId()));
+    }
 }
