@@ -59,9 +59,10 @@ public class ActionsOfAStoreOwner {
     private StoreProxy storeProxy;
     private NotificationController notificationController;
     private ProductRepository productRepository;
+    private StoreBasketRepository storeBasketRepository;
 
     public ActionsOfAStoreOwner(StoreCrudCollection storeMongo){
-        storeRepository = new StoreRepository(storeMongo);
+        storeRepository = new StoreRepository(storeMongo,null);
     }
 
 
@@ -69,8 +70,8 @@ public class ActionsOfAStoreOwner {
     public void setup() {
 
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
-        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
-        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo,storeBasketFactory);
+        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory,storeBasketRepository);
+        shoppingCartRepository = new ShoppingCartRepository(storeBasketRepository,shoppingCartFactory,userRepository);
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         userRepository = new UserRepository(userMongo);
         authenticationController = new AuthenticationController(userCredentialsRepository);

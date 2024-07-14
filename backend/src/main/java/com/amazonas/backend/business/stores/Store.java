@@ -49,12 +49,12 @@ public class Store implements HasId<String> {
     @Transient private PermissionsController permissionsController;
     @Transient private TransactionRepository transactionRepository;
     @Transient private ReadWriteLock lock;
+
+    @Transient private PurchasePolicyManager purchasePolicyManager;
     @Transient private DiscountManager discountManager;
     @Transient private ProductInventory inventory;
-    @Transient private PurchasePolicyManager purchasePolicyManager;
 
     // instance variables
-
     @Id private final String storeId;
     private final String storeName;
     private boolean isOpen;

@@ -12,6 +12,7 @@ import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.backend.repository.crudCollections.StoreBasketCrudCollection;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
@@ -125,9 +126,12 @@ public class PurchaseTests {
         paymentService = mock(PaymentService.class);
         notificationController = mock(NotificationController.class);
         // real instances
+
+        //TODO: MAKE THIS WORK
+        StoreBasketRepository storeBasketRepository = new StoreBasketRepository(mock(StoreBasketCrudCollection.class));
         reservationRepository = spy(new ReservationRepository());
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
-        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
+        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory, storeBasketRepository);
         usersController = new UsersController(
                 userRepository,
                 reservationRepository,
@@ -147,7 +151,7 @@ public class PurchaseTests {
         shippingServiceController.addShippingService(SHIPPING_SERVICE_ID, shippingService);
 
         // ============= Entities setup ============= |
-        shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
+        shoppingCart = new ShoppingCart(USER_ID, storeBasketFactory,storeBasketRepository);
         product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS, "store1");
         user = new RegisteredUser(USER_ID, "email@email.com", LocalDate.now().minusYears(22));
 
@@ -194,7 +198,7 @@ public class PurchaseTests {
         // check that the notification was not sent
         assertDoesNotThrow(()-> verify(notificationController, times(0)).sendNotification(any(),any(),any(),any()));
         // check that the cart was not reset
-        verify(shoppingCartRepository,times(0)).save(any());
+        verify(shoppingCartRepository,times(0)).resetCart(any());
         // check that the product quantity returned to the initial value
         assertEquals(10, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
         // check that the store basket reservation flag was reset
@@ -255,7 +259,7 @@ public class PurchaseTests {
         // check that a transactionId was created
         verify(transactionRepository,times(1)).save(any());
         // check that the shopping cart was reset
-        verify(shoppingCartRepository,times(1)).save(any());
+        verify(shoppingCartRepository,times(1)).resetCart(any());
 
         // ================== Test execution ================== |
         assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.getTransactionId(),SHIPPING_SERVICE_ID)));

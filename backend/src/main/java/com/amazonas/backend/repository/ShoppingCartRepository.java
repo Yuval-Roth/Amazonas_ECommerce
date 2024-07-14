@@ -1,45 +1,37 @@
 package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
-import com.amazonas.backend.business.userProfiles.StoreBasketFactory;
-import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
-import com.amazonas.backend.repository.crudCollections.ShoppingCartCrudCollection;
+import com.amazonas.backend.business.userProfiles.ShoppingCartFactory;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 @Component("shoppingCartRepository")
-public class ShoppingCartRepository extends AbstractCachingRepository<ShoppingCart> {
+public class ShoppingCartRepository {
 
-    private final StoreBasketFactory storeBasketFactory;
+    private final StoreBasketRepository repo;
+    private final ShoppingCartFactory factory;
+    private final UserRepository userRepository;
 
-    public ShoppingCartRepository(ShoppingCartCrudCollection repo, StoreBasketFactory storeBasketFactory) {
-        super(repo);
-        this.storeBasketFactory = storeBasketFactory;
+    public ShoppingCartRepository(StoreBasketRepository storeBasketRepository,
+                                  ShoppingCartFactory shoppingCartFactory, UserRepository userRepository) {
+        this.repo = storeBasketRepository;
+        this.factory = shoppingCartFactory;
+        this.userRepository = userRepository;
     }
 
-    @Override
-    public Iterable<ShoppingCart> findAllById(Iterable<String> strings) {
-        List<ShoppingCart> allById = new LinkedList<>();
-        super.findAllById(strings).forEach(allById::add);
-        allById.forEach(c -> c.setStoreBasketFactory(storeBasketFactory));
-        return allById;
+    public Optional<ShoppingCart> findById(String userId) {
+        if(! userRepository.existsById(userId)) {
+            return Optional.empty();
+        }
+        ShoppingCart shoppingCart = factory.get(userId);
+        shoppingCart.baskets().addAll(repo.findBasketIdsByUserId(userId));
+        return Optional.of(shoppingCart);
     }
 
-    @Override
-    public Optional<ShoppingCart> findById(String s) {
-        Optional<ShoppingCart> byId = super.findById(s);
-        byId.ifPresent(c -> c.setStoreBasketFactory(storeBasketFactory));
-        return byId;
-    }
-
-    @Override
-    public Iterable<ShoppingCart> findAll() {
-        List<ShoppingCart> all = new LinkedList<>();
-        super.findAll().forEach(all::add);
-        all.forEach(c -> c.setStoreBasketFactory(storeBasketFactory));
-        return all;
+    public void resetCart(String userId) {
+        repo.deleteAllByUserId(userId);
     }
 }

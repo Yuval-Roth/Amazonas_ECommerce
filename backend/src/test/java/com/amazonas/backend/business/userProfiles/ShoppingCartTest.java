@@ -21,13 +21,13 @@ class ShoppingCartTest {
     void setUp() {
         storeBasketFactory = mock(StoreBasketFactory.class);
         storeBasket = mock(StoreBasket.class);
-        cart = new ShoppingCart(storeBasketFactory, USER_ID);
+        cart = new ShoppingCart(USER_ID, storeBasketFactory);
     }
 
     @Test
     void mergeGuestCartWithRegisteredCartGood() throws ShoppingCartException {
         String GUEST_USER_ID = "guestUserId";
-        ShoppingCart guestCart = new ShoppingCart(storeBasketFactory, GUEST_USER_ID);
+        ShoppingCart guestCart = new ShoppingCart(GUEST_USER_ID, storeBasketFactory);
         StoreBasket guestStoreBasket = mock(StoreBasket.class);
         when(storeBasketFactory.get(STORE_ID,GUEST_USER_ID)).thenReturn(guestStoreBasket);
         doNothing().when(guestStoreBasket).addProduct(PRODUCT_ID, 1);

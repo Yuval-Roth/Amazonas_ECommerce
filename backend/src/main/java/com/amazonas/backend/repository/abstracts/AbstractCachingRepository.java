@@ -130,17 +130,4 @@ public abstract class AbstractCachingRepository <T extends HasId<String>> {
             clearCache();
         }
     }
-
-    public void flushEntity(String id) {
-        if(cacheEnabled){
-            Optional<T> entity = repository.findById(id);
-            entity.ifPresent(repository::save);
-        }
-    }
-
-    public void flushAllEntities() {
-        if(cacheEnabled){
-            repository.saveAll(cache.values());
-        }
-    }
 }

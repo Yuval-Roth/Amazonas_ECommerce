@@ -3,43 +3,32 @@ package com.amazonas.backend.business.userProfiles;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
-import com.amazonas.common.abstracts.HasId;
+import com.amazonas.backend.repository.CompositeKey2;
+import com.amazonas.backend.repository.StoreBasketRepository;
+import com.amazonas.common.dtos.ShoppingCartDTO;
 import com.amazonas.common.utils.ReadWriteLock;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-
-@Entity
-public class ShoppingCart implements HasId<String> {
+public class ShoppingCart {
     private static final Logger log = LoggerFactory.getLogger(ShoppingCart.class);
 
-    @Transient @Cascade(CascadeType.ALL)
-    private StoreBasketFactory storeBasketFactory;
-    @Transient @Cascade(CascadeType.ALL)
+    private final StoreBasketRepository basketRepository;
+    private final StoreBasketFactory storeBasketFactory;
     private final ReadWriteLock lock;
 
-    @Id
     private final String userId;
-    @OneToMany
-    private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
 
-    public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
+    private final Set<String> baskets; // storeIds
+
+    public ShoppingCart(String userId, StoreBasketFactory storeBasketFactory, StoreBasketRepository basketRepository){
         this.storeBasketFactory = storeBasketFactory;
         this.userId = userId;
-        baskets = new HashMap<>();
-        lock = new ReadWriteLock();
-    }
-
-    public ShoppingCart() {
-        storeBasketFactory = null;
-        userId = null;
-        baskets = new HashMap<>();
+        this.basketRepository = basketRepository;
+        baskets = new HashSet<>();
         lock = new ReadWriteLock();
     }
 
@@ -47,20 +36,14 @@ public class ShoppingCart implements HasId<String> {
     // =============================== CART MANAGEMENT ===================================== |
     //====================================================================================== |
 
+    @Transactional
     public ShoppingCart mergeGuestCartWithRegisteredCart(ShoppingCart cartOfGuest) {
         try{
             lock.acquireWrite();
-            for (var entry : cartOfGuest.baskets.entrySet()) {
-                String storeId = entry.getKey();
-                StoreBasket guestBasket = entry.getValue();
-                StoreBasket userBasket = baskets.get(storeId);
-                if (userBasket == null) {
-                    // If the store ID doesn't exist in the user's cart, add the guest's basket
-                    baskets.put(storeId, guestBasket);
-                } else {
-                    // If the store ID exists in both carts, merge the products
-                    userBasket.mergeStoreBaskets(guestBasket);
-                }
+            Iterable<StoreBasket> guestBaskets = basketRepository.findAllById(cartOfGuest.getBasketIds());
+            for (StoreBasket basket : guestBaskets) {
+                StoreBasket userBasket = getBasketOrNew(basket.storeId(), userId).mergeStoreBaskets(basket);
+                basketRepository.save(userBasket);
             }
             return this;
         } finally {
@@ -72,7 +55,7 @@ public class ShoppingCart implements HasId<String> {
         try{
             lock.acquireRead();
             double totalPrice = 0;
-            for (var basket : baskets.values()) {
+            for (var basket : getBaskets()) {
                 totalPrice += basket.getTotalPrice();
             }
             return totalPrice;
@@ -94,8 +77,9 @@ public class ShoppingCart implements HasId<String> {
                 throw new PurchaseFailedException("Cart is empty");
             }
             Map<String, Reservation> reservations = new HashMap<>();
-            for(var entry : baskets.entrySet()){
-                Reservation r = entry.getValue().reserveBasket();
+            
+            for(StoreBasket basket : getBaskets()){
+                Reservation r = basket.reserveBasket();
 
                 // If the reservation is null it means that the reservation failed,
                 // so we need to cancel all the reservations that were made so far
@@ -106,7 +90,7 @@ public class ShoppingCart implements HasId<String> {
                 }
 
                 // reservation was successful
-                reservations.put(entry.getKey(),r);
+                reservations.put(basket.storeId(),r);
             }
             return reservations;
         } finally {
@@ -132,8 +116,11 @@ public class ShoppingCart implements HasId<String> {
 
         try{
             lock.acquireWrite();
-            StoreBasket basket = baskets.computeIfAbsent(storeId, _ -> storeBasketFactory.get(storeId,userId));
-            basket.addProduct(productId,quantity);
+            String key = CompositeKey2.of(userId, storeId).getKey();
+            StoreBasket actualBasket = getBasketOrNew(storeId, key);
+            actualBasket.addProduct(productId, quantity);
+            basketRepository.save(actualBasket);
+            baskets.add(storeId);
         } finally {
             lock.releaseWrite();
         }
@@ -145,6 +132,10 @@ public class ShoppingCart implements HasId<String> {
             lock.acquireWrite();
             StoreBasket basket = getBasketWithValidation(storeName);
             basket.removeProduct(productId);
+            if(basket.isEmpty()){
+                basketRepository.delete(basket);
+                baskets.remove(storeName);
+            }
         } finally {
             lock.releaseWrite();
         }
@@ -155,24 +146,41 @@ public class ShoppingCart implements HasId<String> {
             lock.acquireWrite();
             StoreBasket basket = getBasketWithValidation(storeName);
             basket.changeProductQuantity(productId,quantity);
+            basketRepository.save(basket);
         } finally {
             lock.releaseWrite();
         }
     }
 
+
     //====================================================================================== |
     // =============================== HELPER METHODS ====================================== |
     //====================================================================================== |
-
     private StoreBasket getBasketWithValidation(String storeName) throws ShoppingCartException {
-        if(!baskets.containsKey(storeName)){
+        String key = CompositeKey2.of(userId, storeName).getKey();
+        Optional<StoreBasket> basket = basketRepository.findById(key);
+        if(basket.isEmpty()){
             throw new ShoppingCartException("Store basket with name: " + storeName + " not found");
         }
-        return baskets.get(storeName);
+        return basket.get();
+    }
+
+    private StoreBasket getBasketOrNew(String storeId, String key) {
+        return basketRepository.findById(key).orElseGet(() -> storeBasketFactory.get(storeId, userId));
+    }
+
+    private Iterable<StoreBasket> getBaskets() {
+        return basketRepository.findAllById(getBasketIds());
+    }
+
+    private List<String> getBasketIds() {
+        return baskets.stream()
+                .map(storeId -> CompositeKey2.of(userId, storeId).getKey())
+                .toList();
     }
 
     private boolean isCartReservable(){
-        for (StoreBasket basket : baskets.values()) {
+        for (StoreBasket basket : getBaskets()) {
             if (basket.isReserved()) {
                 return false;
             }
@@ -187,24 +195,15 @@ public class ShoppingCart implements HasId<String> {
         return userId;
     }
 
-    public Map<String, StoreBasket> getBaskets() {
-        return baskets;
-    }
-
-    @Override
-    public String getId() {
-        return userId;
-    }
-
-    public ShoppingCart getSerializableInstance(){
-        ShoppingCart serializable = new ShoppingCart(null,userId);
-        for (var entry : baskets.entrySet()) {
-            serializable.baskets.put(entry.getKey(), entry.getValue().getSerializableInstance());
+    public ShoppingCartDTO getSerializableInstance(){
+        ShoppingCartDTO serializable = new ShoppingCartDTO(userId,new HashMap<>());
+        for (StoreBasket basket : getBaskets()) {
+            serializable.baskets().put(basket.storeId(), basket.getSerializableInstance());
         }
         return serializable;
     }
 
-    public void setStoreBasketFactory(StoreBasketFactory storeBasketFactory) {
-        this.storeBasketFactory = storeBasketFactory;
+    public Set<String> baskets() {
+        return baskets;
     }
 }

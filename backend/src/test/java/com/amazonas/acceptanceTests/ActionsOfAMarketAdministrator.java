@@ -7,6 +7,7 @@ import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
+import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
@@ -52,15 +53,18 @@ public class ActionsOfAMarketAdministrator {
     private UserRepository userRepository;
     private AuthenticationController authenticationController;
     private NotificationController notificationController;
+    private StoreBasketRepository storeBasketRepository;
+    private StoreFactory storeFactory;
 
     public ActionsOfAMarketAdministrator(StoreCrudCollection storeMongo) {
-        storeRepository = new StoreRepository(storeMongo);
+        storeRepository = new StoreRepository(storeMongo,storeFactory);
     }
 
     @BeforeEach
     public void setup() {
-        shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo,storeBasketFactory);
-        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
+
+        shoppingCartRepository = new ShoppingCartRepository(storeBasketRepository,shoppingCartFactory,userRepository);
+        shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory,storeBasketRepository);
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         userRepository = new UserRepository(userMongo);

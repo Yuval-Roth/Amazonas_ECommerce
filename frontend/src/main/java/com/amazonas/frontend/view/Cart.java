@@ -1,9 +1,8 @@
 package com.amazonas.frontend.view;
 
-import com.amazonas.common.dtos.ShoppingCart;
-import com.amazonas.common.dtos.StoreBasket;
+import com.amazonas.common.dtos.ShoppingCartDTO;
+import com.amazonas.common.dtos.StoreBasketDTO;
 import com.amazonas.common.dtos.StoreDetails;
-import com.amazonas.common.requests.stores.ProductRequest;
 import com.amazonas.common.requests.users.CartRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -24,8 +23,8 @@ import static com.amazonas.frontend.control.AppController.isUserLoggedIn;
 
 @Route("cart")
 public class Cart extends Profile {
-    protected ShoppingCart cart;
-    protected Grid<ShoppingCart> grid;
+    protected ShoppingCartDTO cart;
+    protected Grid<ShoppingCartDTO> grid;
     private AppController appController;
 
     public Cart(AppController appController) {
@@ -38,7 +37,7 @@ public class Cart extends Profile {
             return;
         }
 
-        grid = new Grid<>(ShoppingCart.class, false);
+        grid = new Grid<>(ShoppingCartDTO.class, false);
         // if empty hide the grid
         configureGrid();
 
@@ -51,7 +50,7 @@ public class Cart extends Profile {
 
     private void configureGrid() {
         String userId = AppController.getCurrentUserId();
-        List<ShoppingCart> fetched = null;
+        List<ShoppingCartDTO> fetched = null;
         try {
             fetched = appController.postByEndpoint(Endpoints.VIEW_CART, null);
         } catch (ApplicationException e) {
@@ -59,12 +58,12 @@ public class Cart extends Profile {
             return;
         }
         this.cart = fetched.getFirst();
-        Map<String, StoreBasket> baskets = cart.getBaskets(); // storeId -> StoreBasket
+        Map<String, StoreBasketDTO> baskets = cart.getBaskets(); // storeId -> StoreBasket
 
 
-        for (Map.Entry<String, StoreBasket> entry : baskets.entrySet()) {
+        for (Map.Entry<String, StoreBasketDTO> entry : baskets.entrySet()) {
             String storeId = entry.getKey();
-            StoreBasket storeBasket = entry.getValue();
+            StoreBasketDTO storeBasket = entry.getValue();
 
             // Check if the storeBasket is empty, if so, skip this iteration
             if (storeBasket.getProducts().isEmpty()) {

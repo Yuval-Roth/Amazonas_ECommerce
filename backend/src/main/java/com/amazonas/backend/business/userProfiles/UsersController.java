@@ -130,7 +130,6 @@ public class UsersController {
 
         RegisteredUser newRegisteredUser = new RegisteredUser(userId,email, birthDate);
         userRepository.save(newRegisteredUser);
-        shoppingCartRepository.save(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
         permissionsController.registerUser(userId);
         log.debug("User with id: {} registered successfully", userId);
@@ -182,9 +181,9 @@ public class UsersController {
             lock.releaseWrite();
         }
 
+        //merge the guest cart with the registered user cart
         ShoppingCart cartOfUser = getCartWithValidation(userId);
-        ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
-        shoppingCartRepository.save(mergedShoppingCart);
+        cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
         log.debug("Guest cart merged with user cart successfully");
     }
 
@@ -261,7 +260,6 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.addProduct(storeId, productId,quantity);
-        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} added to the cart of user with id: {}", productId, userId);
     }
 
@@ -269,7 +267,6 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
-        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} removed from the cart of user with id: {}", productId, userId);
     }
 
@@ -277,7 +274,6 @@ public class UsersController {
         userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
-        shoppingCartRepository.flushEntity(userId);
         log.debug("Product with id: {} quantity changed in the cart of user with id: {}", productId, userId);
     }
 
@@ -351,7 +347,7 @@ public class UsersController {
             log.debug("Documented the transactions successfully");
 
             // give the user a new empty cart
-            shoppingCartRepository.save(shoppingCartFactory.get(userId));
+            shoppingCartRepository.resetCart(userId);
             log.debug("The purchase completed");
         }
         finally{
