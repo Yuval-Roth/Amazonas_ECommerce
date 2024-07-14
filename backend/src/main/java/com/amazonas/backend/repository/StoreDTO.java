@@ -1,19 +1,20 @@
-package com.amazonas.backend.business.stores;
+package com.amazonas.backend.repository;
 
+import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.utils.Rating;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
-@Entity
-public class StoreDTO {
+@Entity(name = "Store")
+public class StoreDTO implements HasId<String> {
     @Id
     private String storeId;
     private String storeName;
-    private boolean isOpen;
-    private Rating storeRating;
     private String storeDescription;
+    private Rating storeRating;
+    private boolean isOpen;
 
-    public StoreDTO(String storeId, String storeName, boolean isOpen, Rating storeRating, String storeDescription) {
+    public StoreDTO(String storeId, String storeName, String storeDescription, Rating storeRating, boolean isOpen) {
         this.storeId = storeId;
         this.storeName = storeName;
         this.isOpen = isOpen;
@@ -27,5 +28,10 @@ public class StoreDTO {
         isOpen = false;
         storeRating = Rating.NOT_RATED;
         storeDescription = "";
+    }
+
+    @Override
+    public String getId() {
+        return storeId;
     }
 }

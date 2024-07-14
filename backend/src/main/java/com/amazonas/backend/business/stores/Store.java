@@ -36,34 +36,31 @@ import org.springframework.lang.Nullable;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Entity
-public class Store implements HasId<String> {
+public class Store {
 
     // Constants
     private static final int FIVE_MINUTES = 5 * 60;
     private static final long reservationTimeoutSeconds = FIVE_MINUTES;
 
-    // Dependencies
-    @Transient private ReservationFactory reservationFactory;
-    @Transient private PendingReservationMonitor pendingReservationMonitor;
-    @Transient private PermissionsController permissionsController;
-    @Transient private TransactionRepository transactionRepository;
-    @Transient private ReadWriteLock lock;
+    private final ReadWriteLock lock;
 
-    @Transient private PurchasePolicyManager purchasePolicyManager;
-    @Transient private DiscountManager discountManager;
-    @Transient private ProductInventory inventory;
+    // Dependencies
+    private ReservationFactory reservationFactory;
+    private PendingReservationMonitor pendingReservationMonitor;
+    private PermissionsController permissionsController;
+    private TransactionRepository transactionRepository;
+
+    private PurchasePolicyManager purchasePolicyManager;
+    private DiscountManager discountManager;
+    private AppointmentSystem appointmentSystem;
+    private ProductInventory inventory;
 
     // instance variables
-    @Id private final String storeId;
+    private final String storeId;
     private final String storeName;
     private boolean isOpen;
     private Rating storeRating;
     private String storeDescription;
-
-    @OneToOne
-    @Cascade(CascadeType.ALL)
-    private AppointmentSystem appointmentSystem;
 
     public Store(String storeId,
                  String storeName,
@@ -674,13 +671,10 @@ public class Store implements HasId<String> {
     public void setPurchasePolicyManager(PurchasePolicyManager purchasePolicyManager) {
         this.purchasePolicyManager = purchasePolicyManager;
     }
-
-    @Override
-    public String getId() {
-        return storeId;
-    }
-
     public void setTransactionRepository(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
+    }
+    public void setAppointmentSystem(AppointmentSystem appointmentSystem) {
+        this.appointmentSystem = appointmentSystem;
     }
 }

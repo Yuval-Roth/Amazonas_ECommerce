@@ -31,7 +31,7 @@ public class ActionsOfAStoreManager {
     private AdminPermissionsProfile adminPermissionsProfile;
     private PermissionsProfileRepository permissionsProfileRepository;
     private StoreFactory storeFactory;
-    private StoreRepository storeRepository;
+    private StoreDTORepository storeRepository;
     private TransactionRepository transactionRepository;
     private StoresController storesController;
     private ProductRepository productRepository;

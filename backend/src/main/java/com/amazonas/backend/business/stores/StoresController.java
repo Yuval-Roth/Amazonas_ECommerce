@@ -6,7 +6,7 @@ import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
-import com.amazonas.backend.repository.StoreRepository;
+import com.amazonas.backend.repository.StoreDTORepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
@@ -26,11 +26,11 @@ import java.util.Optional;
 @Component("storesController")
 public class StoresController {
     private final StoreFactory storeFactory;
-    private final StoreRepository repository;
+    private final StoreDTORepository repository;
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
+    public StoresController(StoreFactory storeFactory, StoreDTORepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
         this.transactionRepository = transactionRepository;

@@ -15,7 +15,6 @@ import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.ReadWriteLock;
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,7 @@ public class UsersController {
     private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
     private final ShoppingCartRepository shoppingCartRepository;
-    private final StoreRepository storeRepository;
+    private final StoreDTORepository storeRepository;
     private final ProductRepository productRepository;
     private final ShoppingCartFactory shoppingCartFactory;
     private final AuthenticationController authenticationController;
@@ -61,7 +60,7 @@ public class UsersController {
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
                            PermissionsController permissionsController,
-                           NotificationController notificationController, StoreRepository storeRepository) {
+                           NotificationController notificationController, StoreDTORepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;

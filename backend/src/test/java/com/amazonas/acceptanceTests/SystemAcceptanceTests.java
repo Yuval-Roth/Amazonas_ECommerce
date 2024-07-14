@@ -12,7 +12,7 @@ import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.service.NotificationsService;
 import com.amazonas.common.dtos.Transaction;
-import com.amazonas.backend.repository.StoreRepository;
+import com.amazonas.backend.repository.StoreDTORepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;
 import com.amazonas.backend.business.market.MarketInitializer;
@@ -41,7 +41,7 @@ public class SystemAcceptanceTests {
     private MarketInitializer marketInitializer;
     private UserCredentialsRepository repository;
     private CreditCard creditCard;
-    private StoreRepository storeRepository;
+    private StoreDTORepository storeRepository;
     private TransactionRepository transactionRepository;
 
     @Mock
@@ -52,7 +52,7 @@ public class SystemAcceptanceTests {
     @BeforeEach
     public void setUp() {
         //Mocks
-        storeRepository = mock(StoreRepository.class);
+        storeRepository = mock(StoreDTORepository.class);
         repository = mock(UserCredentialsRepository.class);
         transactionRepository = mock(TransactionRepository.class);
         notificationProxy = mock(NotificationProxy.class);

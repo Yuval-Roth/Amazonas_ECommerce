@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ActionsOfAMarketAdministrator {
 
-    private final StoreRepository storeRepository;
+    private final StoreDTORepository storeRepository;
     private UsersController usersController;
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCartFactory shoppingCartFactory;
@@ -57,7 +57,7 @@ public class ActionsOfAMarketAdministrator {
     private StoreFactory storeFactory;
 
     public ActionsOfAMarketAdministrator(StoreCrudCollection storeMongo) {
-        storeRepository = new StoreRepository(storeMongo,storeFactory);
+        storeRepository = new StoreDTORepository(storeMongo,storeFactory);
     }
 
     @BeforeEach
