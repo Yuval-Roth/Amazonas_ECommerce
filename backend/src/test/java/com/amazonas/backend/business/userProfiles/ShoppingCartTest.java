@@ -31,7 +31,7 @@ class ShoppingCartTest {
         String GUEST_USER_ID = "guestUserId";
         ShoppingCart guestCart = new ShoppingCart(GUEST_USER_ID, storeBasketFactory,null);
         StoreBasket guestStoreBasket = mock(StoreBasket.class);
-        when(storeBasketFactory.get(STORE_ID,GUEST_USER_ID)).thenReturn(guestStoreBasket);
+        when(storeBasketFactory.get(GUEST_USER_ID, STORE_ID)).thenReturn(guestStoreBasket);
         doNothing().when(guestStoreBasket).addProduct(PRODUCT_ID, 1);
         guestCart.addProduct(STORE_ID, PRODUCT_ID, 1);
         assertNotNull(cart.mergeGuestCartWithRegisteredCart(guestCart));
@@ -39,7 +39,7 @@ class ShoppingCartTest {
 
     @Test
     void getTotalPriceGood() throws ShoppingCartException {
-        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(USER_ID, STORE_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.getTotalPrice()).thenReturn(100.0);
@@ -48,7 +48,7 @@ class ShoppingCartTest {
 
     @Test
     void reserveCartGood() throws ShoppingCartException, PurchaseFailedException {
-        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(USER_ID, STORE_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(mock(Reservation.class));
@@ -60,7 +60,7 @@ class ShoppingCartTest {
     }
     @Test
     void reserveCartAlreadyReserved() throws ShoppingCartException, PurchaseFailedException {
-        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(USER_ID, STORE_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(mock(Reservation.class));
@@ -71,7 +71,7 @@ class ShoppingCartTest {
     }
     @Test
     void reserveCartSomeProductsNotReserved() throws ShoppingCartException {
-        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(USER_ID, STORE_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(null);

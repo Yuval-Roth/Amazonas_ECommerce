@@ -116,8 +116,7 @@ public class ShoppingCart {
 
         try{
             lock.acquireWrite();
-            String key = CompositeKey2.of(userId, storeId).getKey();
-            StoreBasket actualBasket = getBasketOrNew(storeId, key);
+            StoreBasket actualBasket = getBasketOrNew(storeId, getKey(storeId));
             actualBasket.addProduct(productId, quantity);
             basketRepository.save(actualBasket);
             baskets.add(storeId);
@@ -157,8 +156,7 @@ public class ShoppingCart {
     // =============================== HELPER METHODS ====================================== |
     //====================================================================================== |
     private StoreBasket getBasketWithValidation(String storeName) throws ShoppingCartException {
-        String key = CompositeKey2.of(userId, storeName).getKey();
-        Optional<StoreBasket> basket = basketRepository.findById(key);
+        Optional<StoreBasket> basket = basketRepository.findById(getKey(storeName));
         if(basket.isEmpty()){
             throw new ShoppingCartException("Store basket with name: " + storeName + " not found");
         }
@@ -166,7 +164,7 @@ public class ShoppingCart {
     }
 
     private StoreBasket getBasketOrNew(String storeId, String key) {
-        return basketRepository.findById(key).orElseGet(() -> storeBasketFactory.get(storeId, userId));
+        return basketRepository.findById(key).orElseGet(() -> storeBasketFactory.get(userId, storeId));
     }
 
     private Iterable<StoreBasket> getBaskets() {
@@ -175,7 +173,7 @@ public class ShoppingCart {
 
     private List<String> getBasketIds() {
         return baskets.stream()
-                .map(storeId -> CompositeKey2.of(userId, storeId).getKey())
+                .map(storeId -> getKey(storeId))
                 .toList();
     }
 
@@ -186,6 +184,10 @@ public class ShoppingCart {
             }
         }
         return true;
+    }
+
+    private String getKey(String storeId){
+        return CompositeKey2.of(userId, storeId).getKey();
     }
 
     //====================================================================================== |

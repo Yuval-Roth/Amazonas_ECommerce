@@ -6,6 +6,7 @@ import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.crudCollections.StoreBasketCrudCollection;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -58,5 +59,11 @@ public class StoreBasketRepository extends AbstractCachingRepository<StoreBasket
         super.findAll().forEach(baskets::add);
         baskets.forEach(factory::populateDependencies);
         return baskets;
+    }
+
+    public List<String> findStoreIdsByUserId(String userId) {
+        List<String> storeIds = new LinkedList<>();
+        repo.findStoreIdsByUserId(userId).forEach(storeIds::add);
+        return storeIds;
     }
 }

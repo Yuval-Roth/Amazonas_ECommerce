@@ -4,6 +4,7 @@ import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.permissions.proxies.UserProxy;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.exceptions.*;
+import com.amazonas.common.dtos.ShoppingCartDTO;
 import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.users.CartRequest;
 import com.amazonas.common.requests.users.LoginRequest;
@@ -107,6 +108,7 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             ShoppingCart cart = proxy.viewCart(request.userId(), request.token());
+            ShoppingCartDTO dto = cart.getSerializableInstance();
             return Response.getOk(cart.getSerializableInstance());
         } catch (AuthenticationFailedException | NoPermissionException | UserException e){
             return Response.getError(e);

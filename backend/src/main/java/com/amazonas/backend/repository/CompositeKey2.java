@@ -16,19 +16,6 @@ public class CompositeKey2 {
     }
 
     public String getKey(){
-        return String.valueOf(this.hashCode());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CompositeKey2 that = (CompositeKey2) o;
-        return Objects.equals(key1, that.key1) && Objects.equals(key2, that.key2);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key1, key2);
+        return key1+"_"+key2;
     }
 }
