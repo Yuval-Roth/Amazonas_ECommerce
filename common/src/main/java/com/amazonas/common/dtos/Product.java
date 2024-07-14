@@ -13,14 +13,15 @@ import java.util.Set;
 @Entity
 public class Product implements Cloneable, HasId<String> {
 
-    private String storeId;
     @Id
     private String productId;
+    private String storeId;
     private String productName;
     private Double price;
     private String category;
     private String description;
     private Rating rating;
+    private boolean enabled;
     @ElementCollection
     private Set<String> keyWords;
 
@@ -39,6 +40,7 @@ public class Product implements Cloneable, HasId<String> {
         this.description = description;
         this.rating = rating;
         keyWords = new HashSet<>();
+        enabled = true;
     }
 
     public Product(
@@ -171,5 +173,9 @@ public class Product implements Cloneable, HasId<String> {
     @Override
     public String getId() {
         return productId;
+    }
+
+    public boolean enabled() {
+        return enabled;
     }
 }

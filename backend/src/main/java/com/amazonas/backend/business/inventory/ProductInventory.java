@@ -11,32 +11,18 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-@Entity
 public class ProductInventory {
 
     private static final Logger log = LoggerFactory.getLogger(ProductInventory.class);
+    private final ProductRepository productRepository;
 
-    @Transient
-    private ProductRepository productRepository;
-
-    @Id
     private final String storeId;
-
-    @ElementCollection
     private final ConcurrentMap<String, Integer> idToQuantity;
-    @ElementCollection
     private final Set<String> disabledProductsId;
 
     public ProductInventory(ProductRepository productRepository, String storeId){
         this.productRepository = productRepository;
         this.storeId = storeId;
-        idToQuantity = new ConcurrentHashMap<>();
-        disabledProductsId = ConcurrentHashMap.newKeySet();
-    }
-
-    public ProductInventory(){
-        this.productRepository = null;
-        this.storeId = "";
         idToQuantity = new ConcurrentHashMap<>();
         disabledProductsId = ConcurrentHashMap.newKeySet();
     }
@@ -133,9 +119,5 @@ public class ProductInventory {
                     .get(!disabledProductsId.contains(product.getProductId()))
                     .add(product));
         return map;
-    }
-
-    public void setProductRepository(ProductRepository productRepository) {
-        this.productRepository = productRepository;
     }
 }
