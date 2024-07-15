@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 public class StoreDTORepository extends AbstractCachingRepository<StoreDTO> {
 
     private final StoreCrudCollection repo;
-    private final StoreFactory storeFactory;
 
-    public StoreDTORepository(StoreCrudCollection repo, @Lazy StoreFactory storeFactory) {
+    public StoreDTORepository(StoreCrudCollection repo) {
         super(repo);
         this.repo = repo;
-        this.storeFactory = storeFactory;
     }
 
     public boolean storeNameExists(String name){

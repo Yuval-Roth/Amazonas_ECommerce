@@ -14,6 +14,7 @@ import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.StoreDTO;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
@@ -88,18 +89,12 @@ public class Store {
         isOpen = true;
     }
 
-    public Store() {
-        storeId = null;
-        storeName = null;
-        storeDescription = null;
-        storeRating = null;
-        inventory = null;
-        appointmentSystem = null;
-        reservationFactory = null;
-        pendingReservationMonitor = null;
-        permissionsController = null;
-        transactionRepository = null;
-        discountManager = null;
+    public Store(StoreDTO storeDTO) {
+        this.storeId = storeDTO.getId();
+        this.storeName = storeDTO.storeName();
+        this.storeDescription = storeDTO.storeDescription();
+        this.storeRating = storeDTO.storeRating();
+        this.isOpen = storeDTO.isOpen();
         lock = new ReadWriteLock();
     }
 

@@ -38,7 +38,7 @@ public class UsersController {
     private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
     private final ShoppingCartRepository shoppingCartRepository;
-    private final StoreDTORepository storeRepository;
+    private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
     private final ShoppingCartFactory shoppingCartFactory;
     private final AuthenticationController authenticationController;
@@ -60,7 +60,7 @@ public class UsersController {
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
                            PermissionsController permissionsController,
-                           NotificationController notificationController, StoreDTORepository storeRepository) {
+                           NotificationController notificationController, StoreRepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
@@ -107,7 +107,7 @@ public class UsersController {
         userId = userId.toLowerCase();
         email = email.toLowerCase();
 
-        if(userRepository.existsById(userId)){
+        if(!isValidUserId(userId)){
             log.debug("User with id: {} already exists in the system", userId);
             throw new UserException("This user name is already exists in the system");
         }
@@ -432,6 +432,10 @@ public class UsersController {
             return false;
         }
         return birthDate.isBefore(LocalDate.now().minusYears(12));
+    }
+
+    private boolean isValidUserId(String userId) {
+        return !userRepository.existsById(userId) && !userId.matches("\\s+");
     }
 
     // =============================================================================== |

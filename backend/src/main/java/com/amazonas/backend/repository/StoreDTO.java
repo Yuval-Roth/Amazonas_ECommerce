@@ -34,4 +34,19 @@ public class StoreDTO implements HasId<String> {
     public String getId() {
         return storeId;
     }
+    public String storeName() {
+        return storeName;
+    }
+
+    public String storeDescription() {
+        return storeDescription;
+    }
+
+    public Rating storeRating() {
+        return storeRating;
+    }
+
+    public boolean isOpen() {
+        return isOpen;
+    }
 }

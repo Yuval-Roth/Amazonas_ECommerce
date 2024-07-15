@@ -106,8 +106,8 @@ public class StoresService {
         Request request = Request.from(json);
         try {
             ProductRequest toAdd = ProductRequest.from(request.payload());
-            proxy.addProduct(toAdd.storeId(), toAdd.product(), request.userId(), request.token());
-            return Response.getOk();
+            String productId = proxy.addProduct(toAdd.storeId(), toAdd.product(), request.userId(), request.token());
+            return Response.getOk(productId);
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }

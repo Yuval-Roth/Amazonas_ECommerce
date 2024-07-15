@@ -54,7 +54,7 @@ public class PurchaseTests {
     private PermissionsController permissionsController;
     private ReservationFactory reservationFactory;
     private TransactionRepository transactionRepository;
-    private StoreDTORepository storeRepository;
+    private StoreRepository storeRepository;
     private NotificationController notificationController;
     // ================================================= |
 
@@ -100,7 +100,7 @@ public class PurchaseTests {
             }
         });
         shoppingCartRepository = mock(ShoppingCartRepository.class);
-        storeRepository = mock(StoreDTORepository.class);
+        storeRepository = mock(StoreRepository.class);
         // Real instances
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         reservationFactory = new ReservationFactory(storeCallbackFactory, shoppingCartRepository);

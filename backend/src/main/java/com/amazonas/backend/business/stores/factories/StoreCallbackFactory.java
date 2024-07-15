@@ -2,6 +2,7 @@ package com.amazonas.backend.business.stores.factories;
 
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.repository.StoreDTORepository;
+import com.amazonas.backend.repository.StoreRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,9 +11,9 @@ import java.util.function.Function;
 @Component("storeCallbackFactory")
 public class StoreCallbackFactory {
 
-    private final StoreDTORepository storeRepository;
+    private final StoreRepository storeRepository;
 
-    public StoreCallbackFactory(StoreDTORepository storeRepository) {
+    public StoreCallbackFactory(StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
     }
 

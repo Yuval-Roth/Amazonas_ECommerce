@@ -1,43 +1,20 @@
 package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.common.utils.ReadWriteLock;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-@Entity
+
 public class AppointmentSystem {
-    @Id
-    String storeId;
-    @OneToMany
-    private final Map<String, OwnerNode> managersList; // contains all the managers of the store every moment
-    @OneToOne
-    @Cascade(CascadeType.ALL)
+    private final String storeId;
     private final OwnerNode ownershipTree; // handle the appointment hierarchy as a tree
-    @OneToMany
-    private final Map<String, OwnerNode> ownershipList; //contains all the owners of the store every moment
-    @Transient
     private final ReadWriteLock appointmentLock;
 
     public AppointmentSystem(String storeFounderId, String storeId) {
-        this.managersList = new HashMap<>();
-        this.ownershipTree = new OwnerNode(storeFounderId, null);
-        this.ownershipList = new HashMap<>();
-        ownershipList.put(ownershipTree.getUserID(), ownershipTree);
+        this.ownershipTree = new OwnerNode(storeFounderId, null ,storeId);
         this.appointmentLock = new ReadWriteLock();
         this.storeId = storeId;
-    }
-
-    public AppointmentSystem() {
-        this.managersList = new HashMap<>();
-        this.ownershipTree = null;
-        this.ownershipList = new HashMap<>();
-        this.appointmentLock = new ReadWriteLock();
     }
 
     /**
@@ -49,13 +26,11 @@ public class AppointmentSystem {
     public boolean addManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            OwnerNode appointeeNode = ownershipTree.search(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                if (!managersList.containsKey(appointedUserId) && !ownershipList.containsKey(appointedUserId)) {
-                    if(appointeeNode.addManager(appointedUserId)) {
-                        managersList.put(appointedUserId, null);
-                        return true;
-                    }
+                if (!ownershipTree.isManager(appointedUserId) && !ownershipTree.isOwner(appointedUserId)) {
+                    appointeeNode.addManager(appointedUserId);
+                    return true;
                 }
             }
             return false;
@@ -74,12 +49,10 @@ public class AppointmentSystem {
     public boolean removeManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            OwnerNode appointeeNode = ownershipTree.search(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                if (appointeeNode.deleteManager(appointedUserId)) {
-                    managersList.remove(appointedUserId);
-                    return true;
-                }
+                appointeeNode.deleteManager(appointedUserId);
+                return true;
             }
             return false;
         }
@@ -97,14 +70,11 @@ public class AppointmentSystem {
     public boolean addOwner(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            OwnerNode appointeeNode = ownershipTree.search(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                if (!ownershipList.containsKey(appointedUserId) && !managersList.containsKey(appointedUserId)) {
+                if (!ownershipTree.isOwner(appointedUserId) && !ownershipTree.isManager(appointedUserId)) {
                     OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
-                    if (appointedNode != null) {
-                        ownershipList.put(appointedUserId, appointedNode);
-                        return true;
-                    }
+                    return appointedNode != null;
                 }
             }
             return false;
@@ -121,20 +91,15 @@ public class AppointmentSystem {
      * @return true - if the operation done well, false - otherwise
      */
     public boolean removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if(appointedUserId.equalsIgnoreCase(getFounder().userId())){
+            return false;
+        }
         try {
             appointmentLock.acquireWrite();
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            OwnerNode appointeeNode = ownershipTree.search(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
-                if (deletedOwner != null) {
-                    List<String> appointerChildren = deletedOwner.getAllChildren();
-                    for (String appointerToRemove : appointerChildren) {
-                        if (ownershipList.remove(appointerToRemove) == null) {
-                            managersList.remove(appointerToRemove);
-                        }
-                    }
-                    return true;
-                }
+                return deletedOwner != null;
             }
             return false;
         }
@@ -164,13 +129,9 @@ public class AppointmentSystem {
     public List<StorePosition> getOwners() {
         try {
             appointmentLock.acquireRead();
-            LinkedList<StorePosition> ret = new LinkedList<>();
-            for (String userId : ownershipList.keySet()) {
-                if (!userId.equals(ownershipTree.getUserID())) { //except the founder
-                    ret.add(new StorePosition(userId, StoreRole.STORE_OWNER));
-                }
-            }
-            return ret;
+            return ownershipTree.getAllOwners().stream()
+                    .map(userId -> new StorePosition(userId, StoreRole.STORE_OWNER))
+                    .toList();
         }
         finally {
             appointmentLock.releaseRead();
@@ -184,11 +145,9 @@ public class AppointmentSystem {
     public List<StorePosition> getManagers() {
         try {
             appointmentLock.acquireRead();
-            LinkedList<StorePosition> ret = new LinkedList<>();
-            for (String userId : managersList.keySet()) {
-                ret.add(new StorePosition(userId, StoreRole.STORE_MANAGER));
-            }
-            return ret;
+            return ownershipTree.getAllManagers().stream()
+                    .map(userId -> new StorePosition(userId, StoreRole.STORE_MANAGER))
+                    .toList();
         }
         finally {
             appointmentLock.releaseRead();
@@ -203,19 +162,9 @@ public class AppointmentSystem {
         try {
             appointmentLock.acquireRead();
             LinkedList<StorePosition> ret = new LinkedList<>();
-            // founder
-            ret.add(new StorePosition(ownershipTree.getUserID(), StoreRole.STORE_FOUNDER));
-            // owners
-            for (String userId : ownershipList.keySet()) {
-                if (!userId.equals(ownershipTree.getUserID())) { //except the founder
-                    ret.add(new StorePosition(userId, StoreRole.STORE_OWNER));
-                }
-            }
-            // managers
-            for (String userId : managersList.keySet()) {
-                ret.add(new StorePosition(userId, StoreRole.STORE_MANAGER));
-            }
-
+            ret.add(new StorePosition(ownershipTree.getUserID(), StoreRole.STORE_FOUNDER)); // founder
+            ret.addAll(getOwners()); /// owners
+            ret.addAll(getManagers()); // managers
             return ret;
         }
         finally {
@@ -231,18 +180,14 @@ public class AppointmentSystem {
     public StoreRole getRoleOfUser(String userID) {
         try {
             appointmentLock.acquireRead();
-            if (userID.equals(ownershipTree.getUserID())) {
+            if (userID.equalsIgnoreCase(ownershipTree.getUserID())) {
                 return StoreRole.STORE_FOUNDER;
             }
-            for (String ownerId : ownershipList.keySet()) {
-                if (ownerId.equals(userID)) {
-                    return StoreRole.STORE_OWNER;
-                }
+            if (ownershipTree.isOwner(userID)) {
+                return StoreRole.STORE_OWNER;
             }
-            for (String managerId : managersList.keySet()) {
-                if (managerId.equals(userID)) {
-                    return StoreRole.STORE_MANAGER;
-                }
+            if (ownershipTree.isManager(userID)) {
+                return StoreRole.STORE_MANAGER;
             }
             return StoreRole.NONE;
         }

@@ -16,6 +16,7 @@ import java.util.List;
 @Component("discountManager")
 @Scope("prototype")
 public class DiscountManager {
+
     private DiscountComponent discountComponent;
 
     public DiscountManager() {
