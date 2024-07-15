@@ -8,6 +8,7 @@ import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.DiscountRepository;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
@@ -44,6 +45,7 @@ class StoreTest {
     private PermissionsController permissionsController;
     private TransactionRepository transactionRepository;
     private ProductRepository productRepository;
+    private DiscountRepository discountRepository;
 
     public StoreTest() {
 
@@ -87,6 +89,8 @@ class StoreTest {
         permissionsController = mock(PermissionsController.class);
         transactionRepository = mock(TransactionRepository.class);
         productRepository = mock(ProductRepository.class);
+        discountRepository = mock(DiscountRepository.class);
+
 
         store = new Store(storeId,
                 storeName,
@@ -97,7 +101,8 @@ class StoreTest {
                 reservationFactory,
                 pendingReservationMonitor,
                 permissionsController,
-                transactionRepository);
+                transactionRepository,
+                discountRepository);
     }
 
     @Test

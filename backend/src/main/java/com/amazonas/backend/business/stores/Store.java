@@ -14,6 +14,7 @@ import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.DiscountRepository;
 import com.amazonas.backend.repository.StoreDTO;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
@@ -52,7 +53,7 @@ public class Store {
     private TransactionRepository transactionRepository;
 
     private PurchasePolicyManager purchasePolicyManager;
-    private DiscountManager discountManager;
+    private DiscountRepository discountRepository;
     private AppointmentSystem appointmentSystem;
     private ProductInventory inventory;
 
@@ -72,7 +73,8 @@ public class Store {
                  ReservationFactory reservationFactory,
                  PendingReservationMonitor pendingReservationMonitor,
                  PermissionsController permissionsController,
-                 TransactionRepository transactionRepository) {
+                 TransactionRepository transactionRepository,
+                 DiscountRepository discountRepository) {
         this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
         this.pendingReservationMonitor = pendingReservationMonitor;
@@ -83,7 +85,7 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.transactionRepository = transactionRepository;
-        this.discountManager = new DiscountManager();
+        this.discountRepository = discountRepository;
         this.purchasePolicyManager = new PurchasePolicyManager();
         lock = new ReadWriteLock();
         isOpen = true;
@@ -224,7 +226,11 @@ public class Store {
             for (String productID : products.keySet()){
                 productsWithQuantitiy.add(new ProductWithQuantitiy(inventory.getProduct(productID), products.get(productID)));
             }
-            ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(productsWithQuantitiy);
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            ProductAfterDiscount[] res = discountManager.get().applyDiscountPolicy(productsWithQuantitiy);
             double ret = 0.0;
             for (ProductAfterDiscount productAfterDiscount : res) {
                 ret += productAfterDiscount.priceAfterDiscount() * productAfterDiscount.quantity();
@@ -487,7 +493,11 @@ public class Store {
     public DiscountComponentDTO getDiscountPolicyDTO() throws StoreException {
         try {
             lock.acquireRead();
-            return discountManager.getDiscountPolicyDTO();
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            return discountManager.get().getDiscountPolicyDTO();
         } finally {
             lock.releaseRead();
         }
@@ -496,7 +506,11 @@ public class Store {
     public String getDiscountPolicyCFG() throws StoreException {
         try {
             lock.acquireRead();
-            String ret = discountManager.getDiscountPolicyCFG();
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            String ret = discountManager.get().getDiscountPolicyCFG();
             if (ret == null) {
                 throw new StoreException("No discount policy found");
             }
@@ -506,10 +520,16 @@ public class Store {
         }
     }
 
-    public boolean deleteAllDiscounts() {
+    public boolean deleteAllDiscounts() throws StoreException {
         try {
             lock.acquireWrite();
-            return discountManager.deleteAllDiscounts();
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            boolean ret = discountManager.get().deleteAllDiscounts();
+            discountRepository.save(discountManager.get());
+            return ret;
         } finally {
             lock.releaseWrite();
         }
@@ -518,7 +538,11 @@ public class Store {
     public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
         try {
             lock.acquireRead();
-            return discountManager.applyDiscountPolicy(products);
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            return discountManager.get().applyDiscountPolicy(products);
         } finally {
             lock.releaseRead();
         }
@@ -527,7 +551,13 @@ public class Store {
     public String changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
         try {
             lock.acquireWrite();
-            return discountManager.changeDiscountPolicy(discountComponentDTO);
+            Optional<DiscountManager> discountManager = discountRepository.findById(storeId);
+            if(!discountManager.isPresent()){
+                throw new StoreException("Discount policy not found");
+            }
+            String ret = discountManager.get().changeDiscountPolicy(discountComponentDTO);
+            discountRepository.save(discountManager.get());
+            return ret;
         } finally {
             lock.releaseWrite();
         }
@@ -657,10 +687,6 @@ public class Store {
 
     public void setInventory(ProductInventory inventory) {
         this.inventory = inventory;
-    }
-
-    public void setDiscountManager(DiscountManager discountManager) {
-        this.discountManager = discountManager;
     }
 
     public void setPurchasePolicyManager(PurchasePolicyManager purchasePolicyManager) {
