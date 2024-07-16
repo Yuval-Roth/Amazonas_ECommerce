@@ -6,6 +6,7 @@ import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.backend.repository.OwnerNodeRepository;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.utils.Rating;
@@ -23,15 +24,17 @@ public class StoreFactory {
     private final PermissionsController permissionsController;
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
+    private final OwnerNodeRepository ownerNodeRepository;
 
     public StoreFactory(ReservationFactory reservationFactory,
                         PendingReservationMonitor pendingReservationMonitor,
-                        PermissionsController permissionsController, TransactionRepository transactionRepository, ProductRepository productRepository) {
+                        PermissionsController permissionsController, TransactionRepository transactionRepository, ProductRepository productRepository, OwnerNodeRepository ownerNodeRepository) {
         this.reservationFactory = reservationFactory;
         this.pendingReservationMonitor = pendingReservationMonitor;
         this.permissionsController = permissionsController;
         this.transactionRepository = transactionRepository;
         this.productRepository = productRepository;
+        this.ownerNodeRepository = ownerNodeRepository;
     }
 
     public Store get(String founderUserId, String storeName, String description){
@@ -41,7 +44,7 @@ public class StoreFactory {
                 description,
                 Rating.NOT_RATED,
                 new ProductInventory(productRepository, storeId),
-                new AppointmentSystem(founderUserId,storeId),
+                new AppointmentSystem(founderUserId,storeId, ownerNodeRepository),
                 reservationFactory,
                 pendingReservationMonitor,
                 permissionsController,

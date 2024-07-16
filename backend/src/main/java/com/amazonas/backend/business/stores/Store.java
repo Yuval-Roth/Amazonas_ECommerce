@@ -672,4 +672,8 @@ public class Store {
     public void setAppointmentSystem(AppointmentSystem appointmentSystem) {
         this.appointmentSystem = appointmentSystem;
     }
+
+    public AppointmentSystem getAppointmentSystem() {
+        return appointmentSystem;
+    }
 }

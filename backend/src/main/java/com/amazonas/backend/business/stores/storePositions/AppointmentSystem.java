@@ -1,20 +1,29 @@
 package com.amazonas.backend.business.stores.storePositions;
 
+import com.amazonas.backend.repository.OwnerNodeRepository;
 import com.amazonas.common.utils.ReadWriteLock;
 
 import java.util.LinkedList;
 import java.util.List;
 
-
 public class AppointmentSystem {
     private final String storeId;
     private final OwnerNode ownershipTree; // handle the appointment hierarchy as a tree
     private final ReadWriteLock appointmentLock;
+    private final OwnerNodeRepository repo;
 
-    public AppointmentSystem(String storeFounderId, String storeId) {
-        this.ownershipTree = new OwnerNode(storeFounderId, null ,storeId);
+    public AppointmentSystem(String storeFounderId, String storeId, OwnerNodeRepository repo) {
+        this.repo = repo;
+        this.ownershipTree = new OwnerNode(storeFounderId, null ,storeId, repo);
         this.appointmentLock = new ReadWriteLock();
         this.storeId = storeId;
+    }
+
+    public AppointmentSystem(OwnerNode root, OwnerNodeRepository repo) {
+        this.repo = repo;
+        this.ownershipTree = root;
+        this.appointmentLock = new ReadWriteLock();
+        this.storeId = root.getStoreId();
     }
 
     /**
@@ -115,7 +124,7 @@ public class AppointmentSystem {
     public StorePosition getFounder() {
         try {
             appointmentLock.acquireRead();
-            return new StorePosition(ownershipTree.getUserID(), StoreRole.STORE_FOUNDER);
+            return new StorePosition(ownershipTree.getUserId(), StoreRole.STORE_FOUNDER);
         }
         finally {
             appointmentLock.releaseRead();
@@ -162,7 +171,7 @@ public class AppointmentSystem {
         try {
             appointmentLock.acquireRead();
             LinkedList<StorePosition> ret = new LinkedList<>();
-            ret.add(new StorePosition(ownershipTree.getUserID(), StoreRole.STORE_FOUNDER)); // founder
+            ret.add(new StorePosition(ownershipTree.getUserId(), StoreRole.STORE_FOUNDER)); // founder
             ret.addAll(getOwners()); /// owners
             ret.addAll(getManagers()); // managers
             return ret;
@@ -180,7 +189,7 @@ public class AppointmentSystem {
     public StoreRole getRoleOfUser(String userID) {
         try {
             appointmentLock.acquireRead();
-            if (userID.equalsIgnoreCase(ownershipTree.getUserID())) {
+            if (userID.equalsIgnoreCase(ownershipTree.getUserId())) {
                 return StoreRole.STORE_FOUNDER;
             }
             if (ownershipTree.isOwner(userID)) {
@@ -194,5 +203,9 @@ public class AppointmentSystem {
         finally {
             appointmentLock.releaseRead();
         }
+    }
+
+    public OwnerNode getRoot() {
+        return ownershipTree;
     }
 }
