@@ -1,7 +1,7 @@
 package com.amazonas.backend.business.stores.factories;
 
 import com.amazonas.backend.business.stores.reservations.Reservation;
-import com.amazonas.backend.repository.StoreDTORepository;
+import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.StoreRepository;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.backend.repository.CompositeKey2;
+import com.amazonas.backend.repository.OwnerNodeRepository;
 import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.*;
 
@@ -15,16 +16,18 @@ public class OwnerNode implements HasId<String> {
     private String ownerNodeId;
     private final String storeId;
     private final String userID;
-    @OneToMany
-    private List<OwnerNode> ownersChildren;
+    @ElementCollection
+    private List<String> ownersChildren;
     @ElementCollection
     private List<String> managersChildren;
-    @ManyToOne
-    private final OwnerNode parent;
+    private final String parent; // parent userId
+    @Transient
+    private OwnerNodeRepository repo;
 
-    public OwnerNode(String userID, OwnerNode parent, String storeId) {
+    public OwnerNode(String userID, String parent, String storeId, OwnerNodeRepository repo) {
         this.userID = userID;
         this.parent = parent;
+        this.repo = repo;
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
         this.storeId = storeId;
@@ -34,9 +37,10 @@ public class OwnerNode implements HasId<String> {
     public OwnerNode() {
         this.userID = "";
         storeId = "";
-        this.parent = new OwnerNode("", null,"");
+        this.parent = null;
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
+        repo = null;
     }
 
     public String getUserID() {
@@ -44,13 +48,15 @@ public class OwnerNode implements HasId<String> {
     }
 
     public OwnerNode addOwner(String userID) {
-        OwnerNode userNode = new OwnerNode(userID, this, storeId);
-        ownersChildren.add(userNode);
+        OwnerNode userNode = new OwnerNode(userID, this.userID, storeId,repo);
+        repo.save(userNode);
+        ownersChildren.add(userNode.userID);
         return userNode;
     }
 
-    public boolean addManager(String userID) {
-        return managersChildren.add(userID);
+    public void addManager(String userID) {
+        managersChildren.add(userID);
+        repo.save(this);
     }
 
     /**
@@ -58,16 +64,15 @@ public class OwnerNode implements HasId<String> {
      * @param userID
      * @return userID if the action successfully done, otherwise returns null
      */
-    public OwnerNode deleteOwner(String userID) {
-        Iterator<OwnerNode> iter = ownersChildren.iterator();
+    public void deleteOwner(String userID) {
+        Iterator<String> iter = ownersChildren.iterator();
         while (iter.hasNext()) {
-            OwnerNode owner = iter.next(); // must be called before you can call i.remove()
-            if (owner != null && owner.userID != null && owner.userID.equals(userID)) {
+            String owner = iter.next(); // must be called before you can call i.remove()
+            if (owner != null && owner.equalsIgnoreCase(userID)) {
+                repo.deleteById(getKey(userID, storeId));
                 iter.remove();
-                return owner;
             }
         }
-        return null;
     }
 
     public boolean deleteManager(String userID) {
@@ -137,5 +142,9 @@ public class OwnerNode implements HasId<String> {
 
     public boolean isManager(String userId) {
         return getAllManagers().contains(userId);
+    }
+
+    public void setRepo(OwnerNodeRepository repo) {
+        this.repo = repo;
     }
 }

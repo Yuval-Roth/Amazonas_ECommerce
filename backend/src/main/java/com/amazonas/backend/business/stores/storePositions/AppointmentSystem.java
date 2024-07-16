@@ -98,8 +98,8 @@ public class AppointmentSystem {
             appointmentLock.acquireWrite();
             OwnerNode appointeeNode = ownershipTree.search(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
-                return deletedOwner != null;
+                appointeeNode.deleteOwner(appointedUserId);
+                return true;
             }
             return false;
         }
