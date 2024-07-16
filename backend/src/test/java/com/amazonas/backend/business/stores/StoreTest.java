@@ -456,7 +456,7 @@ class StoreTest {
     }
 
     @Test
-    void reserveProductGood() {
+    void reserveProductGood() throws StoreException {
         Map<String,Integer> products = new HashMap<>(){{
             put(laptop.getProductId(), 1);
             put(book.getProductId(), 1);

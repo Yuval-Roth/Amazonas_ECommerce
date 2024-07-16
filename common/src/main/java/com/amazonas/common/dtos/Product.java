@@ -21,7 +21,8 @@ public class Product implements Cloneable, HasId<String> {
     private String category;
     private String description;
     private Rating rating;
-    private boolean enabled;
+    private Boolean enabled;
+    private Integer quantity;
     @ElementCollection
     private Set<String> keyWords;
 
@@ -126,6 +127,10 @@ public class Product implements Cloneable, HasId<String> {
         this.storeId = storeId;
     }
 
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public Set<String> getKeyWords() {
         return keyWords;
     }
@@ -175,7 +180,21 @@ public class Product implements Cloneable, HasId<String> {
         return productId;
     }
 
-    public boolean enabled() {
+    public boolean getEnabled() {
         return enabled;
+    }
+
+    public boolean disable() {
+        enabled = false;
+        return enabled;
+    }
+
+    public boolean enable() {
+        enabled = true;
+        return enabled;
+    }
+
+    public int getQuantity() {
+        return quantity;
     }
 }

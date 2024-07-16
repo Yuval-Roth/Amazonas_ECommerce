@@ -10,6 +10,7 @@ import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.NotificationException;
+import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.service.NotificationsService;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.repository.StoreRepository;

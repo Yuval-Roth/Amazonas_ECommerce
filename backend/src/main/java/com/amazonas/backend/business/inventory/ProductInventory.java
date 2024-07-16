@@ -3,13 +3,11 @@ package com.amazonas.backend.business.inventory;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
-import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class ProductInventory {
 
@@ -17,14 +15,18 @@ public class ProductInventory {
     private final ProductRepository productRepository;
 
     private final String storeId;
-    private final ConcurrentMap<String, Integer> idToQuantity;
-    private final Set<String> disabledProductsId;
+    private final Set<String> productIds;
 
     public ProductInventory(ProductRepository productRepository, String storeId){
         this.productRepository = productRepository;
         this.storeId = storeId;
-        idToQuantity = new ConcurrentHashMap<>();
-        disabledProductsId = ConcurrentHashMap.newKeySet();
+        this.productIds = new HashSet<>();
+    }
+
+    public ProductInventory(ProductRepository productRepository, String storeId, Set<String> productIds){
+        this.productRepository = productRepository;
+        this.storeId = storeId;
+        this.productIds = productIds;
     }
 
     public boolean nameExists(String productName){
@@ -51,58 +53,80 @@ public class ProductInventory {
         return true;
     }
 
+    /**
+     * @throws StoreException if the product is not in the inventory
+     */
     public boolean removeProduct(String productId) throws StoreException {
         log.debug("Removing product with id {} from inventory", productId);
 
         if(! productRepository.existsById(productId)){
-            throw new StoreException("product wasn't removed - no product in system");
+            throw new StoreException("Product with id " + productId + " not found in inventory");
         }
-
         productRepository.deleteById(productId);
-        idToQuantity.remove(productId);
-        disabledProductsId.remove(productId);
+        // remove id from productIds
+        productIds.remove(productId);
         return true;
     }
 
-    public void setQuantity(String productId, int quantity) {
+    /**
+     * @throws StoreException if the product is not in the inventory
+     */
+    public void setQuantity(String productId, int quantity) throws StoreException {
         log.debug("Setting quantity of product with id {} to {} in inventory", productId, quantity);
-        idToQuantity.put(productId, quantity);
+        // get the product from the repository and change the quantity
+        Product product = getProduct(productId);
+        product.setQuantity(quantity);
     }
 
 
     /**
-     * @return the quantity of the product. -1 if the product is not in the inventory
+     * @throws StoreException if the product is not in the inventory
      */
-    public int getQuantity(String productId) {
+    public int getQuantity(String productId) throws StoreException {
         log.debug("Getting quantity of product with id {} in inventory", productId);
-        return idToQuantity.getOrDefault(productId, -1);
+        Product product = getProduct(productId);
+        return product.getQuantity();
     }
 
-    public boolean enableProduct(String productId) {
-        return disabledProductsId.remove(productId);
+    /**
+     * @throws StoreException if the product is not in the inventory
+     */
+    public boolean enableProduct(String productId) throws StoreException {
+        Product product = getProduct(productId);
+        return product.enable();
     }
 
-    public boolean disableProduct(String productId) {
-        return disabledProductsId.add(productId);
+    /**
+     * @throws StoreException if the product is not in the inventory
+     */
+    public boolean disableProduct(String productId) throws StoreException {
+        Product product = getProduct(productId);
+        return product.disable();
     }
 
-    public boolean isProductDisabled(String productId) {
-        return disabledProductsId.contains(productId);
+    /**
+     * @throws StoreException if the product is not in the inventory
+     */
+    public boolean isProductDisabled(String productId) throws StoreException{
+        Product product = getProduct(productId);
+        return !product.getEnabled();
     }
 
     public List<Product> getAllAvailableProducts(){
         List<Product> products = new LinkedList<>();
-        productRepository.findAllByStoreId(storeId).forEach(product->{
-            if(!disabledProductsId.contains(product.getProductId())
-                    && idToQuantity.get(product.getProductId()) > 0){
+        productRepository.findAllByStoreId(storeId).forEach(product-> {
+            if (product.getEnabled() && product.getQuantity() > 0) {
                 products.add(product);
             }
         });
         return products;
     }
 
-    public Product getProduct(String ProductID) {
-        return productRepository.findById(ProductID).orElse(null);
+    public Product getProduct(String productId) throws StoreException {
+        return productRepository.findById(productId).orElseThrow(()-> {
+            log.debug("Product with id {} not found in inventory", productId);
+            return new StoreException("Product with id " + productId + " not found in inventory");
+        });
     }
 
     /**
@@ -115,9 +139,7 @@ public class ProductInventory {
         map.put(false, new LinkedList<>());
 
         productRepository.findAllByStoreId(storeId).forEach(product ->
-                map
-                    .get(!disabledProductsId.contains(product.getProductId()))
-                    .add(product));
+                map.get(product.getEnabled()).add(product));
         return map;
     }
 }
