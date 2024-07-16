@@ -3,13 +3,10 @@ package com.amazonas.backend.business.inventory;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
-import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class ProductInventory {
 
@@ -22,7 +19,7 @@ public class ProductInventory {
     public ProductInventory(ProductRepository productRepository, String storeId){
         this.productRepository = productRepository;
         this.storeId = storeId;
-        productIds = new HashSet<>();
+        this.productIds = new HashSet<>();
     }
 
     public boolean nameExists(String productName){
@@ -57,14 +54,20 @@ public class ProductInventory {
         }
 
         productRepository.deleteById(productId);
-        idToQuantity.remove(productId);
-        disabledProductsId.remove(productId);
+        // remove id from productIds
+        productIds.remove(productId);
         return true;
     }
 
     public void setQuantity(String productId, int quantity) {
         log.debug("Setting quantity of product with id {} to {} in inventory", productId, quantity);
-        idToQuantity.put(productId, quantity);
+        // get the product from the repository and change the quantity
+        Product product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            log.debug("Product with id {} not found in inventory", productId);
+            return;
+        }
+        product.setQuantity(quantity);
     }
 
 
@@ -73,26 +76,45 @@ public class ProductInventory {
      */
     public int getQuantity(String productId) {
         log.debug("Getting quantity of product with id {} in inventory", productId);
-        return idToQuantity.getOrDefault(productId, -1);
+        Product product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            log.debug("Product with id {} not found in inventory", productId);
+            return -1;
+        }
+        return product.getQuantity();
     }
 
     public boolean enableProduct(String productId) {
-        return disabledProductsId.remove(productId);
+        Product product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            log.debug("Product with id {} not found in inventory", productId);
+            return false;
+        }
+        return product.enable();
     }
 
     public boolean disableProduct(String productId) {
-        return disabledProductsId.add(productId);
+        Product product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            log.debug("Product with id {} not found in inventory", productId);
+            return false;
+        }
+        return product.disable();
     }
 
     public boolean isProductDisabled(String productId) {
-        return disabledProductsId.contains(productId);
+        Product product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            log.debug("Product with id {} not found in inventory", productId);
+            return false;
+        }
+        return !product.getEnabled();
     }
 
     public List<Product> getAllAvailableProducts(){
         List<Product> products = new LinkedList<>();
-        productRepository.findAllByStoreId(storeId).forEach(product->{
-            if(!disabledProductsId.contains(product.getProductId())
-                    && idToQuantity.get(product.getProductId()) > 0){
+        productRepository.findAllByStoreId(storeId).forEach(product-> {
+            if (product.getEnabled() && product.getQuantity() > 0) {
                 products.add(product);
             }
         });
@@ -113,9 +135,7 @@ public class ProductInventory {
         map.put(false, new LinkedList<>());
 
         productRepository.findAllByStoreId(storeId).forEach(product ->
-                map
-                    .get(!disabledProductsId.contains(product.getProductId()))
-                    .add(product));
+                map.get(product.getEnabled()).add(product));
         return map;
     }
 }
