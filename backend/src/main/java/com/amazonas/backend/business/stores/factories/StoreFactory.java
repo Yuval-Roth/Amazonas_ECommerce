@@ -7,6 +7,7 @@ import com.amazonas.backend.business.stores.reservations.PendingReservationMonit
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.repository.DiscountRepository;
+import com.amazonas.backend.repository.OwnerNodeRepository;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.utils.Rating;
@@ -24,6 +25,7 @@ public class StoreFactory {
     private final PermissionsController permissionsController;
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
+    private final OwnerNodeRepository ownerNodeRepository;
     private final DiscountRepository discountRepository;
 
     public StoreFactory(ReservationFactory reservationFactory,
@@ -31,13 +33,15 @@ public class StoreFactory {
                         PermissionsController permissionsController,
                         TransactionRepository transactionRepository,
                         ProductRepository productRepository,
-                        DiscountRepository discountRepository) {
+                        DiscountRepository discountRepository,
+                        OwnerNodeRepository ownerNodeRepository) {
         this.reservationFactory = reservationFactory;
         this.pendingReservationMonitor = pendingReservationMonitor;
         this.permissionsController = permissionsController;
         this.transactionRepository = transactionRepository;
         this.productRepository = productRepository;
         this.discountRepository = discountRepository;
+        this.ownerNodeRepository = ownerNodeRepository;
     }
 
     public Store get(String founderUserId, String storeName, String description){
@@ -47,7 +51,7 @@ public class StoreFactory {
                 description,
                 Rating.NOT_RATED,
                 new ProductInventory(productRepository, storeId),
-                new AppointmentSystem(founderUserId,storeId),
+                new AppointmentSystem(founderUserId,storeId, ownerNodeRepository),
                 reservationFactory,
                 pendingReservationMonitor,
                 permissionsController,

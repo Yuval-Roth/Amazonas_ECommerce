@@ -43,7 +43,7 @@ class UsersControllerTest {
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCart cart;
     private PermissionsController permissionsController;
-    private StoreDTORepository storeRepository;
+    private StoreRepository storeRepository;
     private NotificationController notificationController;
 
     @BeforeEach
@@ -58,7 +58,7 @@ class UsersControllerTest {
         paymentService = mock(PaymentService.class);
         authenticationController = mock(AuthenticationController.class);
         permissionsController = mock(PermissionsController.class);
-        storeRepository = mock(StoreDTORepository.class);
+        storeRepository = mock(StoreRepository.class);
         notificationController = mock(NotificationController.class);
         usersController = new UsersController(
                 userRepository,

@@ -7,14 +7,13 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransactionCrudCollection extends CrudRepository<Transaction, String>{
-
-    @Query("FROM Transaction WHERE userId = ?1 order by dateOfTransaction desc")
-    Iterable<Transaction> findAllByUserId(String userId);
-
-    @Query("FROM Transaction WHERE storeId = ?1 order by dateOfTransaction desc")
+    @Query("SELECT t FROM Transaction t WHERE t.storeId = ?1 order by t.dateOfTransaction desc")
     Iterable<Transaction> findAllByStoreId(String storeId);
 
-    @Query("FROM Transaction WHERE storeId = ?1 AND state = 'PENDING_SHIPMENT' order by dateOfTransaction asc")
+    //                                                 TODO: FIX THE QUERY   \/ \/ \/ \/ \/
+    @Query("SELECT t FROM Transaction t WHERE t.storeId = ?1 AND t.state = 'PENDING_SHIPMENT' order by t.dateOfTransaction asc")
     Iterable<Transaction> findAllPendingShipmentByStoreId(String storeId);
 
+    @Query("SELECT t FROM Transaction t WHERE t.userId = ?1 order by t.dateOfTransaction desc")
+    Iterable<Transaction> findAllByUserId(String userId);
 }

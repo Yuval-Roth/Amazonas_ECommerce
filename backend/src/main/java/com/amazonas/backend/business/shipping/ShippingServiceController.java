@@ -1,9 +1,10 @@
 package com.amazonas.backend.business.shipping;
 
 import com.amazonas.backend.business.stores.Store;
+import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.backend.repository.StoreDTORepository;
+import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
@@ -24,10 +25,10 @@ public class ShippingServiceController {
     private final Map<String, ShippingService> disabledShippingServices;
 
     private final ReadWriteLock lock;
-    private final StoreDTORepository storeRepository;
+    private final StoreRepository storeRepository;
     private final TransactionRepository transactionRepository;
 
-    public ShippingServiceController(StoreDTORepository storeRepository, TransactionRepository transactionRepository) {
+    public ShippingServiceController(StoreRepository storeRepository, TransactionRepository transactionRepository) {
         activeShippingServices = new HashMap<>();
         disabledShippingServices = new HashMap<>();
         lock = new ReadWriteLock();
