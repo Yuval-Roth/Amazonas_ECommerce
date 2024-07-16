@@ -21,7 +21,6 @@ public class ShoppingCart {
     private final ReadWriteLock lock;
 
     private final String userId;
-
     private final Set<String> baskets; // storeIds
 
     public ShoppingCart(String userId, StoreBasketFactory storeBasketFactory, StoreBasketRepository basketRepository){

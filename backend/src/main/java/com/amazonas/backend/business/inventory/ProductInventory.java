@@ -17,14 +17,12 @@ public class ProductInventory {
     private final ProductRepository productRepository;
 
     private final String storeId;
-    private final ConcurrentMap<String, Integer> idToQuantity;
-    private final Set<String> disabledProductsId;
+    private final Set<String> productIds;
 
     public ProductInventory(ProductRepository productRepository, String storeId){
         this.productRepository = productRepository;
         this.storeId = storeId;
-        idToQuantity = new ConcurrentHashMap<>();
-        disabledProductsId = ConcurrentHashMap.newKeySet();
+        productIds = new HashSet<>();
     }
 
     public boolean nameExists(String productName){

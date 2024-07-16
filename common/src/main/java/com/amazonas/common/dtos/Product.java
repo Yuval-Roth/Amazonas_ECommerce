@@ -21,7 +21,8 @@ public class Product implements Cloneable, HasId<String> {
     private String category;
     private String description;
     private Rating rating;
-    private boolean enabled;
+    private Boolean enabled;
+    private Integer quantity;
     @ElementCollection
     private Set<String> keyWords;
 
