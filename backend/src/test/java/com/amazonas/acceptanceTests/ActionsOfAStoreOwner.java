@@ -39,7 +39,6 @@ public class ActionsOfAStoreOwner {
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCartFactory shoppingCartFactory;
     private Guest guest;
-    private ShoppingCartCrudCollection shoppingCartMongo;
     private StoreBasketFactory storeBasketFactory;
     private UserCrudCollection userMongo;
     private TransactionCrudCollection transMongo;
@@ -62,7 +61,7 @@ public class ActionsOfAStoreOwner {
     private StoreBasketRepository storeBasketRepository;
 
     public ActionsOfAStoreOwner(StoreCrudCollection storeMongo){
-        storeRepository = new StoreRepository(storeMongo,null);
+        storeRepository = new StoreRepository(null,null,null,null);
     }
 
 

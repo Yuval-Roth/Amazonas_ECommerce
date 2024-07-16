@@ -478,7 +478,7 @@ class StoreTest {
     }
 
     @Test
-    void reserveProductBad() {
+    void reserveProductBad() throws StoreException {
         Map<String,Integer> products = new HashMap<>(){{
             put(laptop.getProductId(), 1);
             put(book.getProductId(), 1);
@@ -514,7 +514,7 @@ class StoreTest {
     }
 
     @Test
-    void testCancelReservationGood() {
+    void testCancelReservationGood() throws StoreException {
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.getProductId(), 1));
         when(reservation.isCancelled()).thenReturn(false);

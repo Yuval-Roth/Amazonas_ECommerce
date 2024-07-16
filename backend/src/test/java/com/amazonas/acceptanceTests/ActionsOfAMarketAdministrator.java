@@ -56,7 +56,7 @@ public class ActionsOfAMarketAdministrator {
     private StoreFactory storeFactory;
 
     public ActionsOfAMarketAdministrator(StoreCrudCollection storeMongo) {
-        storeRepository = new StoreRepository(null,null,null);
+        storeRepository = new StoreRepository(null,null,null,null);
     }
 
     @BeforeEach
