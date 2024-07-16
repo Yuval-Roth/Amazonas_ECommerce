@@ -10,7 +10,7 @@ class AppointmentSystemTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        appointmentSystem = new AppointmentSystem("25489","store1");
+        appointmentSystem = new AppointmentSystem("25489","store1",null);
     }
 
     @org.junit.jupiter.api.AfterEach

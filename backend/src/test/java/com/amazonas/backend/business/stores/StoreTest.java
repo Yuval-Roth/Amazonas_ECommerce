@@ -3,12 +3,14 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
+import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.backend.repository.DiscountRepository;
+import com.amazonas.backend.repository.DiscountManagerRepository;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
@@ -45,7 +47,8 @@ class StoreTest {
     private PermissionsController permissionsController;
     private TransactionRepository transactionRepository;
     private ProductRepository productRepository;
-    private DiscountRepository discountRepository;
+    private DiscountManager discountManager;
+    private PurchasePolicyManager purchasePolicyManager;
 
     public StoreTest() {
 
@@ -89,7 +92,8 @@ class StoreTest {
         permissionsController = mock(PermissionsController.class);
         transactionRepository = mock(TransactionRepository.class);
         productRepository = mock(ProductRepository.class);
-        discountRepository = mock(DiscountRepository.class);
+        discountManager = mock(DiscountManager.class);
+        purchasePolicyManager = mock(PurchasePolicyManager.class);
 
 
         store = new Store(storeId,
@@ -102,7 +106,8 @@ class StoreTest {
                 pendingReservationMonitor,
                 permissionsController,
                 transactionRepository,
-                discountRepository);
+                discountManager,
+                purchasePolicyManager);
     }
 
     @Test
@@ -461,7 +466,7 @@ class StoreTest {
     }
 
     @Test
-    void reserveProductGood() {
+    void reserveProductGood() throws StoreException {
         Map<String,Integer> products = new HashMap<>(){{
             put(laptop.getProductId(), 1);
             put(book.getProductId(), 1);
@@ -483,7 +488,7 @@ class StoreTest {
     }
 
     @Test
-    void reserveProductBad() {
+    void reserveProductBad() throws StoreException {
         Map<String,Integer> products = new HashMap<>(){{
             put(laptop.getProductId(), 1);
             put(book.getProductId(), 1);
@@ -519,7 +524,7 @@ class StoreTest {
     }
 
     @Test
-    void testCancelReservationGood() {
+    void testCancelReservationGood() throws StoreException {
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.getProductId(), 1));
         when(reservation.isCancelled()).thenReturn(false);

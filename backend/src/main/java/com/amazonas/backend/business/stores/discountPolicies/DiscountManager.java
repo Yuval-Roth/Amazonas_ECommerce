@@ -16,8 +16,6 @@ import com.amazonas.common.DiscountDTOs.*;
 import java.util.LinkedList;
 import java.util.List;
 @Entity
-//@Component("discountManager") TODO: don't know if necessary
-//@Scope("prototype") TODO: don't know if necessary
 public class DiscountManager implements HasId<String> {
 
     @Id

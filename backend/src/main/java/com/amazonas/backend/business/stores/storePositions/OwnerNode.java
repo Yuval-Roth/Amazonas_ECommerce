@@ -1,56 +1,67 @@
 package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.backend.repository.CompositeKey2;
+import com.amazonas.backend.repository.OwnerNodeRepository;
 import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 public class OwnerNode implements HasId<String> {
 
+    private static final Logger log = LoggerFactory.getLogger(OwnerNode.class);
+
     @Id
     private String ownerNodeId;
     private final String storeId;
-    private final String userID;
-    @OneToMany
-    private List<OwnerNode> ownersChildren;
+    private final String userId;
+    @ElementCollection
+    private List<String> ownersChildren;
     @ElementCollection
     private List<String> managersChildren;
-    @ManyToOne
-    private final OwnerNode parent;
+    private final String parent; // parent userId
+    @Transient
+    private OwnerNodeRepository repo;
 
-    public OwnerNode(String userID, OwnerNode parent, String storeId) {
-        this.userID = userID;
+    public OwnerNode(String userId, String parent, String storeId, OwnerNodeRepository repo) {
+        this.userId = userId;
         this.parent = parent;
+        this.repo = repo;
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
         this.storeId = storeId;
-        ownerNodeId = getKey(userID, storeId);
+        ownerNodeId = getKey(userId, storeId);
     }
 
     public OwnerNode() {
-        this.userID = "";
+        this.userId = "";
         storeId = "";
-        this.parent = new OwnerNode("", null,"");
+        this.parent = null;
         managersChildren = new LinkedList<>();
         ownersChildren = new LinkedList<>();
+        repo = null;
     }
 
-    public String getUserID() {
-        return userID;
+    public String getUserId() {
+        return userId;
     }
 
     public OwnerNode addOwner(String userID) {
-        OwnerNode userNode = new OwnerNode(userID, this, storeId);
-        ownersChildren.add(userNode);
+        OwnerNode userNode = new OwnerNode(userID, this.userId, storeId,repo);
+        repo.save(userNode);
+        ownersChildren.add(userNode.userId);
         return userNode;
     }
 
-    public boolean addManager(String userID) {
-        return managersChildren.add(userID);
+    public void addManager(String userID) {
+        managersChildren.add(userID);
+        repo.save(this);
     }
 
     /**
@@ -58,64 +69,65 @@ public class OwnerNode implements HasId<String> {
      * @param userID
      * @return userID if the action successfully done, otherwise returns null
      */
-    public OwnerNode deleteOwner(String userID) {
-        Iterator<OwnerNode> iter = ownersChildren.iterator();
+    public void deleteOwner(String userID) {
+        Iterator<String> iter = ownersChildren.iterator();
         while (iter.hasNext()) {
-            OwnerNode owner = iter.next(); // must be called before you can call i.remove()
-            if (owner != null && owner.userID != null && owner.userID.equals(userID)) {
+            String owner = iter.next(); // must be called before you can call i.remove()
+            if (owner != null && owner.equalsIgnoreCase(userID)) {
+                repo.deleteById(getKey(userID, storeId));
                 iter.remove();
-                return owner;
             }
         }
-        return null;
     }
 
-    public boolean deleteManager(String userID) {
-        Iterator<String> iter = managersChildren.iterator();
-        while (iter.hasNext()) {
-            String manager = iter.next(); // must be called before you can call i.remove()
-            if (manager.equals(userID)) {
-                iter.remove();
-                return true;
-            }
-        }
-        return false;
+    public void deleteManager(String userID) {
+        // must be called before you can call i.remove()
+        managersChildren.removeIf(manager -> manager.equals(userID));
     }
 
     public List<String> getAllChildren() {
         List<String> ret = new LinkedList<>(managersChildren);
-        ret.add(getUserID());
-        for(OwnerNode ownershipChild : ownersChildren) {
-            ret.addAll(ownershipChild.getAllChildren());
+        ret.add(userId);
+        for(String child : managersChildren) {
+            ret.addAll(getNode(child).getAllChildren());
         }
         return ret;
+    }
+
+    private OwnerNode getNode(String userId) {
+        Optional<OwnerNode> node = repo.findById(getKey(userId, storeId));
+        if (node.isEmpty()) {
+            log.error("could not find OwnerNode with id: {}", userId);
+            throw new IllegalStateException("An error has occurred, check the logs for more information");
+        }
+        return node.get();
     }
 
     public List<String> getAllOwners() {
         List<String> ret = new LinkedList<>();
         if(parent != null) {
-            ret.add(getUserID());
+            ret.add(getUserId());
         }
-        for(OwnerNode ownershipChild : ownersChildren) {
-            ret.addAll(ownershipChild.getAllOwners());
+        for(String child : ownersChildren) {
+            ret.addAll(getNode(child).getAllOwners());
         }
         return ret;
     }
 
     public List<String> getAllManagers() {
         List<String> ret = new LinkedList<>(managersChildren);
-        for(OwnerNode ownershipChild : ownersChildren) {
-            ret.addAll(ownershipChild.getAllManagers());
+        for(String child : managersChildren) {
+            ret.addAll(getNode(child).getAllManagers());
         }
         return ret;
     }
 
     public OwnerNode search(String userId){
-        if (userID.equals(userId)){
+        if (this.userId.equalsIgnoreCase(userId)){
             return this;
         }
-        for (OwnerNode owner : ownersChildren){
-            OwnerNode found = owner.search(userId);
+        for (String owner : ownersChildren){
+            OwnerNode found = getNode(owner).search(userId);
             if (found != null){
                 return found;
             }
@@ -125,7 +137,7 @@ public class OwnerNode implements HasId<String> {
 
     @Override
     public String getId() {
-        return userID;
+        return userId;
     }
     private String getKey(String userID, String storeId) {
         return CompositeKey2.of(userID, storeId).getKey();
@@ -137,5 +149,13 @@ public class OwnerNode implements HasId<String> {
 
     public boolean isManager(String userId) {
         return getAllManagers().contains(userId);
+    }
+
+    public void setRepo(OwnerNodeRepository repo) {
+        this.repo = repo;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

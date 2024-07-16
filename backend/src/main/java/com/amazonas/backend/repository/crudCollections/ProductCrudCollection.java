@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @Repository
 public interface ProductCrudCollection extends CrudRepository<Product, String>{
 
@@ -13,4 +15,7 @@ public interface ProductCrudCollection extends CrudRepository<Product, String>{
 
     @Query("SELECT p FROM Product p WHERE p.storeId = ?1")
     Iterable<Product> findAllByStoreId(String storeId);
+
+    @Query("SELECT p.productId FROM Product p WHERE p.storeId = ?1")
+    Iterable<String> findAllProductIdsByStoreId(String storeId);
 }
