@@ -35,7 +35,6 @@ public class ActionsOfAMarketAdministrator {
     private UsersController usersController;
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCartFactory shoppingCartFactory;
-    private ShoppingCartCrudCollection shoppingCartMongo;
     private StoreBasketFactory storeBasketFactory;
     private UserCrudCollection userMongo;
     private TransactionCrudCollection transMongo;

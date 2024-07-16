@@ -30,8 +30,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
+import jakarta.transaction.Transactional;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
@@ -39,6 +42,7 @@ import java.util.*;
 
 public class Store {
 
+    private static final Logger log = LoggerFactory.getLogger(Store.class);
     // Constants
     private static final int FIVE_MINUTES = 5 * 60;
     private static final long reservationTimeoutSeconds = FIVE_MINUTES;
@@ -376,6 +380,8 @@ public class Store {
     //====================================================================== |
     //=========================== RESERVATIONS ============================= |
     //====================================================================== |
+
+    @Transactional
     @Nullable
     public Reservation reserveProducts(Map<String,Integer> toReserve, String userId){
         try{
@@ -412,11 +418,14 @@ public class Store {
             pendingReservationMonitor.addReservation(reservation);
 
             return reservation;
+        } catch(StoreException _){
+            return null;
         } finally {
             lock.releaseWrite();
         }
     }
 
+    @Transactional
     public boolean cancelReservation(Reservation reservation) {
         try{
             lock.acquireWrite();
@@ -438,7 +447,12 @@ public class Store {
             for(var entry : reservation.productIdToQuantity().entrySet()){
                 String productId = entry.getKey();
                 int quantity = entry.getValue();
-                inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
+                try {
+                    inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
+                } catch (StoreException _) {
+                    log.error("Product not found in inventory while cancelling reservation");
+                    throw new IllegalStateException("Product not found in inventory while cancelling reservation");
+                }
             }
             return true;
         } finally {
