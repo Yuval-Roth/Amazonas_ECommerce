@@ -14,11 +14,11 @@ import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.DiscountManagerRepository;
 import com.amazonas.backend.repository.StoreDTO;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
-import com.amazonas.common.abstracts.HasId;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.dtos.Transaction;
@@ -26,13 +26,7 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.ProductSearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -76,7 +70,9 @@ public class Store {
                  ReservationFactory reservationFactory,
                  PendingReservationMonitor pendingReservationMonitor,
                  PermissionsController permissionsController,
-                 TransactionRepository transactionRepository) {
+                 TransactionRepository transactionRepository,
+                 DiscountManager discountManager,
+                 PurchasePolicyManager purchasePolicyManager) {
         this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
         this.pendingReservationMonitor = pendingReservationMonitor;
@@ -87,8 +83,8 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.transactionRepository = transactionRepository;
-        this.discountManager = new DiscountManager();
-        this.purchasePolicyManager = new PurchasePolicyManager();
+        this.discountManager = discountManager;
+        this.purchasePolicyManager = purchasePolicyManager;
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -520,7 +516,7 @@ public class Store {
         }
     }
 
-    public boolean deleteAllDiscounts() {
+    public boolean deleteAllDiscounts() throws StoreException {
         try {
             lock.acquireWrite();
             return discountManager.deleteAllDiscounts();
@@ -546,8 +542,6 @@ public class Store {
             lock.releaseWrite();
         }
     }
-
-
 
     //====================================================================== |
     //========================== STORE POLICIES ============================ |
@@ -673,10 +667,6 @@ public class Store {
         this.inventory = inventory;
     }
 
-    public void setDiscountManager(DiscountManager discountManager) {
-        this.discountManager = discountManager;
-    }
-
     public void setPurchasePolicyManager(PurchasePolicyManager purchasePolicyManager) {
         this.purchasePolicyManager = purchasePolicyManager;
     }
@@ -689,5 +679,9 @@ public class Store {
 
     public AppointmentSystem getAppointmentSystem() {
         return appointmentSystem;
+    }
+
+    public void setDiscountManager(DiscountManager discountManager) {
+        this.discountManager = discountManager;
     }
 }

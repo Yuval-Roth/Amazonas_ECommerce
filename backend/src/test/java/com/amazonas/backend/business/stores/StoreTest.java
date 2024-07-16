@@ -3,11 +3,14 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
+import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.DiscountManagerRepository;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
@@ -44,6 +47,8 @@ class StoreTest {
     private PermissionsController permissionsController;
     private TransactionRepository transactionRepository;
     private ProductRepository productRepository;
+    private DiscountManager discountManager;
+    private PurchasePolicyManager purchasePolicyManager;
 
     public StoreTest() {
 
@@ -87,6 +92,9 @@ class StoreTest {
         permissionsController = mock(PermissionsController.class);
         transactionRepository = mock(TransactionRepository.class);
         productRepository = mock(ProductRepository.class);
+        discountManager = mock(DiscountManager.class);
+        purchasePolicyManager = mock(PurchasePolicyManager.class);
+
 
         store = new Store(storeId,
                 storeName,
@@ -97,7 +105,9 @@ class StoreTest {
                 reservationFactory,
                 pendingReservationMonitor,
                 permissionsController,
-                transactionRepository);
+                transactionRepository,
+                discountManager,
+                purchasePolicyManager);
     }
 
     @Test

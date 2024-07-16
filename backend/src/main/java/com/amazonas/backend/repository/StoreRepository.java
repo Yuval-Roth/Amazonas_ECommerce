@@ -2,7 +2,9 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.stores.Store;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
+import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.common.utils.Rating;
 import org.springframework.stereotype.Component;
@@ -17,12 +19,14 @@ public class StoreRepository {
     private final StoreFactory storeFactory;
     private final AppointmentSystemRepository apptSysRepo;
     private final ProductInventoryRepository inventoryRepository;
+    private final DiscountManagerRepository discountRepository;
 
-    public StoreRepository(StoreDTORepository storeDTORepository, StoreFactory storeFactory, AppointmentSystemRepository appointmentSystemRepository, ProductInventoryRepository productInventoryRepository) {
+    public StoreRepository(StoreDTORepository storeDTORepository, StoreFactory storeFactory, AppointmentSystemRepository appointmentSystemRepository, ProductInventoryRepository productInventoryRepository, DiscountManagerRepository discountRepository) {
         this.storeDTORepository = storeDTORepository;
         this.storeFactory = storeFactory;
         this.apptSysRepo = appointmentSystemRepository;
         this.inventoryRepository = productInventoryRepository;
+        this.discountRepository = discountRepository;
     }
 
     public Optional<Store> findById(String storeId) {
@@ -56,10 +60,13 @@ public class StoreRepository {
         Store store = new Store(dto);
         AppointmentSystem apptSys = apptSysRepo.findById(dto.getId()).orElseThrow(()-> new IllegalStateException("Appointment system not found for store with id: " + dto.getId()));
         ProductInventory inventory = inventoryRepository.findById(dto.getId()).orElseThrow(()-> new IllegalStateException("Product inventory not found for store with id: " + dto.getId()));
+        DiscountManager discountManager = discountRepository.findById(dto.getId()).orElseThrow(()-> new IllegalStateException("Discount manager not found for store with id: " + dto.getId()));
 
         storeFactory.populateDependencies(store);
         store.setAppointmentSystem(apptSys);
         store.setInventory(inventory);
+        store.setDiscountManager(discountManager);
+        store.setPurchasePolicyManager(new PurchasePolicyManager()); // not persisted yet
         //TODO: continue adding dependencies
         return store;
     }

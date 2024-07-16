@@ -6,39 +6,53 @@ import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.Cate
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.abstracts.HasId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import com.amazonas.common.DiscountDTOs.*;
 
 import java.util.LinkedList;
 import java.util.List;
+@Entity
+public class DiscountManager implements HasId<String> {
 
-@Component("discountManager")
-@Scope("prototype")
-public class DiscountManager {
+    @Id
+    private final String storeId;
+    private String discountComponentCFG;
 
-    private DiscountComponent discountComponent;
+    public DiscountManager(String storeId) {
+        this.storeId = storeId;
+        this.discountComponentCFG = "";
+    }
 
     public DiscountManager() {
-        discountComponent = null;
+        this.discountComponentCFG = "";
+        this.storeId = "";
     }
 
     public DiscountComponentDTO getDiscountPolicyDTO() throws StoreException {
-        if (discountComponent == null) {
+        if (discountComponentCFG == null) {
             return null;
         }
-        return discountComponent.generateDTO();
+        try {
+            return Translator.translator(discountComponentCFG);
+        }
+        catch (Exception e) {
+            throw new StoreException("Failed to get discount policy details", e);
+        }
     }
 
     public String getDiscountPolicyCFG() throws StoreException {
-        if (discountComponent == null) {
+        if (discountComponentCFG == null) {
             return null;
         }
-        return discountComponent.generateCFG();
+        return discountComponentCFG;
     }
 
     public boolean deleteAllDiscounts() {
-        discountComponent = null;
+        discountComponentCFG = null;
         return true;
     }
 
@@ -49,18 +63,32 @@ public class DiscountManager {
      * @throws StoreException
      */
     public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
-        if (discountComponent == null) {
-            ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
-            int index = 0;
-            for (ProductWithQuantitiy product : products) {
-                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().getProductId(),
-                                                                           product.quantity(),
-                                                                           product.product().getPrice(),
-                                                                           product.product().getPrice());
-            }
-            return productsAfterDiscounts;
+        if (discountComponentCFG == null) {
+            return calculateWithoutDiscount(products);
         }
-        return discountComponent.calculateDiscount(products);
+        DiscountComponentDTO componentDTO = null;
+        try {
+            componentDTO = getDiscountPolicyDTO();
+        }
+        catch (Exception e ) {
+            throw new StoreException("Failed to calculate price with discounts");
+        }
+        if (componentDTO == null) {
+            throw new StoreException("Failed to calculate price with discounts");
+        }
+        return translateDiscountComponentDTO(getDiscountPolicyDTO()).calculateDiscount(products);
+    }
+
+    private ProductAfterDiscount[] calculateWithoutDiscount(List<ProductWithQuantitiy> products) {
+        ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
+        int index = 0;
+        for (ProductWithQuantitiy product : products) {
+            productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().getProductId(),
+                    product.quantity(),
+                    product.product().getPrice(),
+                    product.product().getPrice());
+        }
+        return productsAfterDiscounts;
     }
 
     /**
@@ -70,8 +98,8 @@ public class DiscountManager {
      * @throws StoreException
      */
     public String changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
-        discountComponent = translateDiscountComponentDTO(discountComponentDTO);
-        return discountComponent.generateCFG();
+        discountComponentCFG = translateDiscountComponentDTO(discountComponentDTO).generateCFG();
+        return discountComponentCFG;
     }
 
     private DiscountComponent translateDiscountComponentDTO(DiscountComponentDTO discountComponentDTO) throws StoreException {
@@ -199,4 +227,8 @@ public class DiscountManager {
         }
     }
 
+    @Override
+    public String getId() {
+        return storeId;
+    }
 }

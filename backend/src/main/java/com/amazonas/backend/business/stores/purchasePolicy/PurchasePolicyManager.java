@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PurchasePolicyManager {
+
     private PurchaseRule purchasePolicy;
 
     public PurchasePolicyManager() {
