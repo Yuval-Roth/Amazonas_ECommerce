@@ -45,7 +45,6 @@ public class PermissionsController {
         inMemoryProfiles = new HashMap<>();
     }
 
-    //TODO: fix this when we have a database
     public boolean isAdmin(String userId) {
         log.debug("Checking if user {} is admin", userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
@@ -58,6 +57,7 @@ public class PermissionsController {
         log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addUserActionPermission(action);
+        savePermissionProfile(profile);
         log.debug("action was {}", result? "added" : "not added");
         return result;
     }
@@ -66,6 +66,7 @@ public class PermissionsController {
         log.debug("Removing action {} from user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeUserActionPermission(action);
+        savePermissionProfile(profile);
         log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
@@ -74,6 +75,7 @@ public class PermissionsController {
         log.debug("Adding action {} to user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addStorePermission(storeId, action);
+        savePermissionProfile(profile);
         log.debug("action was {}", result? "added" : "not added");
         return result;
     }
@@ -82,6 +84,7 @@ public class PermissionsController {
         log.debug("Removing action {} from user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeStorePermission(storeId, action);
+        savePermissionProfile(profile);
         log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
@@ -90,6 +93,7 @@ public class PermissionsController {
         log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addMarketActionPermission(action);
+        savePermissionProfile(profile);
         log.debug("action was {}", result? "added" : "not added");
         return result;
     }
@@ -205,6 +209,12 @@ public class PermissionsController {
             throw new IllegalArgumentException("User not registered");
         }
         return profile.get();
+    }
+
+    public void savePermissionProfile(PermissionsProfile profile) {
+        if(profile instanceof UserPermissionsProfile userP){
+            repository.save(userP);
+        }
     }
 
     public PermissionsProfile getGuestPermissionsProfile() {

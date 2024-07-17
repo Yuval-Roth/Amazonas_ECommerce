@@ -77,6 +77,5 @@ public class PermissionsBeans {
         profile.addUserActionPermission(UserActions.SEND_NOTIFICATION);
         profile.addUserActionPermission(UserActions.DELETE_NOTIFICATION);
         profile.addUserActionPermission(UserActions.SET_NOTIFICATION_READ);
-
     }
 }
