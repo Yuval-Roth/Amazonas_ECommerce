@@ -26,6 +26,7 @@ public class UsersAcceptanceTests {
     private ShoppingCart shoppingCart;
     @InjectMocks
     private UserProfilesService userProfilesService;
+
     @BeforeEach
     void setUp() {
         // Manually create a mock for UsersController
@@ -42,8 +43,6 @@ public class UsersAcceptanceTests {
         when(usersController.enterAsGuest()).thenReturn("guestId");
         String result = userProfilesService.enterAsGuest();
         assertEquals(Response.getOk("guestId"), result);
-
-
     }
 
 //-------------------------UseCase 2.1.2-------------------------
