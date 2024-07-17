@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.storePositions;
+package com.amazonas.common.dtos;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;

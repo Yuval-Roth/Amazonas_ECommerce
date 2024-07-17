@@ -183,7 +183,7 @@ class UsersControllerTest {
         when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(cart.getTotalPrice()).thenReturn(10.0);
         when(user.getPaymentMethod()).thenReturn(paymentMethod);
-        when(paymentMethod.getDetails()).thenReturn("details");
+//        when(paymentMethod.getDetails()).thenReturn("details"); //TODO: fix this
         when(paymentService.charge(any(),any())).thenReturn(true);
 
         assertDoesNotThrow(()-> usersController.payForPurchase(USER_ID));
@@ -201,7 +201,7 @@ class UsersControllerTest {
         when(shoppingCartRepository.findById(USER_ID)).thenReturn(Optional.of(cart));
         when(cart.getTotalPrice()).thenReturn(10.0);
         when(user.getPaymentMethod()).thenReturn(paymentMethod);
-        when(paymentMethod.getDetails()).thenReturn("details");
+//        when(paymentMethod.getDetails()).thenReturn("details"); //TODO: fix this
         when(paymentService.charge(any(),any())).thenReturn(false);
 
         assertThrows(PurchaseFailedException.class, ()-> usersController.payForPurchase(USER_ID));

@@ -1,6 +1,8 @@
 package com.amazonas.backend.business.stores.storePositions;
 
 import com.amazonas.backend.repository.OwnerNodeRepository;
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
 import com.amazonas.common.utils.ReadWriteLock;
 
 import java.util.LinkedList;

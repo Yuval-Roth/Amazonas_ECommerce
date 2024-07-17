@@ -5,6 +5,7 @@ import com.amazonas.backend.business.permissions.proxies.UserProxy;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.exceptions.*;
 import com.amazonas.common.dtos.ShoppingCartDTO;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.users.CartRequest;
 import com.amazonas.common.requests.users.LoginRequest;
@@ -27,6 +28,17 @@ public class UserProfilesService {
     public String enterAsGuest(){
         String guestId = proxy.enterAsGuest();
         return Response.getOk(guestId);
+    }
+
+    public String getUserInformation(String json){
+        Request request = Request.from(json);
+        try{
+            String requestedUserId = request.payload();
+            UserInformation user = proxy.getUserInformation(request.userId(), request.token(), requestedUserId);
+            return Response.getOk(user);
+        } catch (AuthenticationFailedException | UserException e){
+            return Response.getError(e);
+        }
     }
 
     public String register(String json){

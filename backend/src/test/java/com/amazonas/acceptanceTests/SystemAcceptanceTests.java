@@ -62,7 +62,7 @@ public class SystemAcceptanceTests {
         shippingController = new ShippingServiceController(storeRepository,transactionRepository);
         marketInitializer = new MarketInitializer(shippingController, paymentController);
         notificationService = new NotificationsService(notificationProxy);
-        creditCard = new CreditCard();
+        creditCard = mock(CreditCard.class);
 
     }
 

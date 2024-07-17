@@ -14,6 +14,7 @@ import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.utils.ReadWriteLock;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -101,6 +102,10 @@ public class UsersController {
     // ================================ USER MANAGEMENT ============================== |
     // =============================================================================== |
 
+    public UserInformation getUserInformation(String requestedUserId) throws UserException {
+        RegisteredUser user = userRepository.findById(requestedUserId).orElseThrow(()-> new UserException("The user does not exists"));
+        return new UserInformation(user.getUserId(), user.getEmail(), user.getBirthDate());
+    }
 
     public void register(String email, String userId, String password, LocalDate birthDate) throws UserException {
 
@@ -341,9 +346,12 @@ public class UsersController {
                         log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.get().getStoreName());
                     }
                 });
-
             }
             log.debug("Documented the transactions successfully");
+
+            for (Reservation r : reservations) {
+                reservationRepository.deleteReservation(userId, r);
+            }
 
             // give the user a new empty cart
             shoppingCartRepository.resetCart(userId);

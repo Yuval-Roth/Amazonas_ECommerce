@@ -41,16 +41,18 @@ public class Cart extends Profile {
         // if empty hide the grid
         configureGrid();
 
+
         // add in the bottom right button for proceed to checkout
-        Button checkoutButton = new Button("Checkout", _ -> UI.getCurrent().navigate("Payment"));
+        Button checkoutButton = new Button("Checkout", _ -> {
+            UI.getCurrent().navigate("Payment");
+        });
         checkoutButton.setIcon(VaadinIcon.CHECK.create());
         checkoutButton.getStyle().set("margin-left", "auto");
-        content.add(grid, checkoutButton);
+        content.add(checkoutButton);
     }
 
     private void configureGrid() {
-        String userId = AppController.getCurrentUserId();
-        List<ShoppingCartDTO> fetched = null;
+        List<ShoppingCartDTO> fetched;
         try {
             fetched = appController.postByEndpoint(Endpoints.VIEW_CART, null);
         } catch (ApplicationException e) {
@@ -59,7 +61,11 @@ public class Cart extends Profile {
         }
         this.cart = fetched.getFirst();
         Map<String, StoreBasketDTO> baskets = cart.getBaskets(); // storeId -> StoreBasket
-
+        if (fetched.isEmpty()) {
+            // Display message for empty cart
+            content.add(new Paragraph("Your cart is empty."));
+            return; // Exit the method early
+        }
 
         for (Map.Entry<String, StoreBasketDTO> entry : baskets.entrySet()) {
             String storeId = entry.getKey();
@@ -75,37 +81,45 @@ public class Cart extends Profile {
             // show product name using getProduct
             productGrid.addColumn(entry1 -> {
                 try {
-                    Product product = getProduct(storeId, entry1.getKey());
+                    Product product = getProduct(entry1.getKey());
                     return product.getProductName();
                 } catch (ApplicationException e) {
-                    e.printStackTrace();
                     return "Product not found";
                 }
             }).setHeader("Product Name");
             productGrid.addColumn(Map.Entry::getValue).setHeader("Quantity");
 
+
+
             // Add change quantity button + and -
             productGrid.addColumn(new ComponentRenderer<>(entry1 -> {
-                Button incrementButton = new Button("+", event -> {
-                    changeProductQuantity(userId, storeId, entry1.getKey(), entry1.getValue() + 1);
-                });
-                Button decrementButton = new Button("-", event -> {
+                Button incrementButton = new Button("+", _ -> changeProductQuantity(storeId, entry1.getKey(), entry1.getValue() + 1));
+                Button decrementButton = new Button("-", _ -> {
                     // if 1 then remove
                     if (entry1.getValue() == 1) {
-                        removeProductFromCart(userId, storeId, entry1.getKey());
+                        removeProductFromCart(storeId, entry1.getKey());
                         return;
                     }
-                    changeProductQuantity(userId, storeId, entry1.getKey(), entry1.getValue() - 1);
+                    changeProductQuantity(storeId, entry1.getKey(), entry1.getValue() - 1);
                 });
                 return new Paragraph(incrementButton, decrementButton);
             })).setHeader("Change Quantity");
 
+
+            // show price * quantity from quantity column
+            productGrid.addColumn(entry1 -> {
+                try {
+                    Product product = getProduct(entry1.getKey());
+                    return product.getPrice() * entry1.getValue();
+                } catch (ApplicationException e) {
+                    return "Product not found";
+                }
+            }).setHeader("Price");
+
+
+
             // Add remove product button
-            productGrid.addColumn(new ComponentRenderer<>(entry1 -> {
-                return new Button("Remove", event -> {
-                    removeProductFromCart(userId, storeId, entry1.getKey());
-                });
-            })).setHeader("Remove");
+            productGrid.addColumn(new ComponentRenderer<>(entry1 -> new Button("Remove", _ -> removeProductFromCart(storeId, entry1.getKey())))).setHeader("Remove");
 
             productGrid.setItems(storeBasket.getProducts().entrySet());
 
@@ -113,21 +127,20 @@ public class Cart extends Profile {
             String storeName = getStoreName(storeId);
             Paragraph storeHeader = new Paragraph("Store: " + storeName);
             // when click go to store page - store?storeid= + storeId
-            storeHeader.addClickListener(event -> UI.getCurrent().navigate("store?storeid=" + storeId));
+            storeHeader.addClickListener(_ -> UI.getCurrent().navigate("store?storeid=" + storeId));
             content.add(storeHeader, productGrid);
 
             productGrid.addItemClickListener(event -> {
                 try {
-                    Product product = getProduct(storeId, event.getItem().getKey());
+                    Product product = getProduct(event.getItem().getKey());
                     UI.getCurrent().navigate("product-details?productId=" + product.getProductId());
-                } catch (ApplicationException e) {
-                    e.printStackTrace();
+                } catch (ApplicationException _) {
                 }
             });
         }
     }
 
-    private void changeProductQuantity(String userId, String storeId, String productId, int quantity) {
+    private void changeProductQuantity(String storeId, String productId, int quantity) {
         try {
             CartRequest request = new CartRequest(storeId, productId, quantity);
             appController.postByEndpoint(Endpoints.CHANGE_PRODUCT_QUANTITY, request);
@@ -137,7 +150,7 @@ public class Cart extends Profile {
         }
     }
 
-    private void removeProductFromCart(String userId, String storeId, String productId) {
+    private void removeProductFromCart(String storeId, String productId) {
         try {
             CartRequest request = new CartRequest(storeId, productId, 0);
             appController.postByEndpoint(Endpoints.REMOVE_PRODUCT_FROM_CART, request);
@@ -152,11 +165,12 @@ public class Cart extends Profile {
             StoreDetails store = (StoreDetails) appController.postByEndpoint(Endpoints.GET_STORE_DETAILS, storeID).getFirst();
             return store.getStoreName();
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return "";
         }
     }
 
-    private Product getProduct(String storeId, String productId) throws ApplicationException {
+    private Product getProduct(String productId) throws ApplicationException {
         List<Product> products = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
         if (products.isEmpty()) {
             throw new ApplicationException("Product not found");

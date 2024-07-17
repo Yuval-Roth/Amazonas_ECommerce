@@ -12,6 +12,7 @@ import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.Transaction;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.utils.Rating;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -130,6 +131,7 @@ public class DataGenerator {
 
         // assign managers
         storesController.getStore(store1Id).addManager("user1", "user6");
+        storesController.getStore(store1Id).addPermissionToManager("user6", StoreActions.ADD_PRODUCT);
         storesController.getStore(store2Id).addManager("user2", "user7");
 
         // add some products to some carts
@@ -140,6 +142,7 @@ public class DataGenerator {
         usersController.addProductToCart("user5",store5Id, product9.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product10.getProductId(),5);
 
+        System.out.println("Store1 id: "+store1Id);
         System.out.println("Data generated successfully");
     }
 }

@@ -17,7 +17,7 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
     @Transient
     private DefaultPermissionsProfile defaultProfile;
     @OneToMany
-    private final Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
+    private Map<String,StoreActionsCollection> storeIdToAllowedStoreActions;
     @ElementCollection
     private final Set<UserActions> allowedUserActions;
     @ElementCollection
@@ -108,7 +108,7 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
             return false;
         }
         lock.acquireWrite();
-        boolean result = allowedMarketActions.remove(action);
+        boolean result = allowedMarketActions.remove(action) || allowedMarketActions.contains(MarketActions.ALL);
         lock.releaseWrite();
         return result;
     }
@@ -119,7 +119,7 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
             return true;
         }
         lock.acquireRead();
-        boolean result = allowedUserActions.contains(action);
+        boolean result = allowedUserActions.contains(action) || allowedUserActions.contains(UserActions.ALL);
         lock.releaseRead();
         return result;
     }
@@ -140,9 +140,17 @@ public class UserPermissionsProfile implements PermissionsProfile, HasId<String>
     public boolean hasPermission(String storeId, StoreActions action) {
         lock.acquireRead();
         StoreActionsCollection allowedActions = storeIdToAllowedStoreActions.get(storeId);
-        boolean result = allowedActions != null && allowedActions.contains(action);
+        boolean result = allowedActions != null && (allowedActions.contains(StoreActions.ALL) || allowedActions.contains(action));
         lock.releaseRead();
         return result;
+    }
+
+    @Override
+    public List<StoreActions> getStorePermissions(String storeId){
+        if(storeIdToAllowedStoreActions == null) {
+            storeIdToAllowedStoreActions = new HashMap<>();
+        }
+        return storeIdToAllowedStoreActions.getOrDefault(storeId, new StoreActionsCollection(userId,storeId)).allowedActions.stream().toList();
     }
 
     @Override

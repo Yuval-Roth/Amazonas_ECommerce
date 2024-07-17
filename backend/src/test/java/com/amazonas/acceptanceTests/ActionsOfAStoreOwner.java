@@ -12,8 +12,8 @@ import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
-import com.amazonas.backend.business.stores.storePositions.StoreRole;
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
 import com.amazonas.backend.business.userProfiles.Guest;
 import com.amazonas.backend.business.userProfiles.ShoppingCartFactory;
 import com.amazonas.backend.business.userProfiles.StoreBasketFactory;
@@ -61,7 +61,7 @@ public class ActionsOfAStoreOwner {
     private StoreBasketRepository storeBasketRepository;
 
     public ActionsOfAStoreOwner(StoreCrudCollection storeMongo){
-        storeRepository = new StoreRepository(null,null,null,null);
+        storeRepository = new StoreRepository(null,null,null,null,null);
     }
 
 

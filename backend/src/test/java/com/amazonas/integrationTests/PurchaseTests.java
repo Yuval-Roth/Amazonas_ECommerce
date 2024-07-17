@@ -8,6 +8,7 @@ import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.stores.Store;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
@@ -74,7 +75,7 @@ public class PurchaseTests {
     private ShippingService shippingService;
     private Transaction transaction;
     private PurchasePolicyManager purchasePolicyManager;
-    private DiscountManagerRepository discountRepository;
+    private DiscountManager discountManager;
     // ================================================= |
 
 
@@ -105,7 +106,7 @@ public class PurchaseTests {
         shoppingCartRepository = mock(ShoppingCartRepository.class);
         storeRepository = mock(StoreRepository.class);
         purchasePolicyManager = mock(PurchasePolicyManager.class);
-        discountRepository = mock(DiscountManagerRepository.class);
+        discountManager = mock(DiscountManager.class);
 
         // Real instances
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
@@ -123,7 +124,7 @@ public class PurchaseTests {
                 pendingReservationMonitor,
                 permissionsController,
                 transactionRepository,
-                discountRepository,
+                discountManager,
                 purchasePolicyManager);
 
         // ============= UsersController setup ============= |

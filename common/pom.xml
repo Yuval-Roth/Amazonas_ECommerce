@@ -20,6 +20,7 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
+<<<<<<< HEAD
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
@@ -28,6 +29,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
+=======
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-web</artifactId>
+      </dependency>
+>>>>>>> 75e86c342b1c622e432c76211205066c9b74ba5b
   </dependencies>
 
 </project>

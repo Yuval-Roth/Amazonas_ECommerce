@@ -5,6 +5,7 @@ import com.amazonas.common.abstracts.HasId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
+import com.amazonas.backend.business.payment.CreditCard;
 
 import java.time.LocalDate;
 
@@ -36,11 +37,6 @@ public class RegisteredUser implements User, HasId<String> {
     }
 
     @Override
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
@@ -51,9 +47,14 @@ public class RegisteredUser implements User, HasId<String> {
 
     public LocalDate getBirthDate() {return birthDate.plusDays(0); }
 
+    public PaymentMethod getPaymentMethod() {
+        // not supported
+        return new CreditCard("","","","","","","");
+    }
+
     @Override
     public String getId() {
-        return getUserId();
+        return userId;
     }
 }
 

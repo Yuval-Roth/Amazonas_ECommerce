@@ -1,9 +1,11 @@
 package com.amazonas.backend.business.stores;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
@@ -23,25 +25,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Collections.addAll;
+
 @Component("storesController")
 public class StoresController {
     private final StoreFactory storeFactory;
     private final StoreRepository repository;
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
+    private final PermissionsController permissionsController;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository, PermissionsController permissionsController){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
         this.transactionRepository = transactionRepository;
         this.productRepository = productRepository;
+        this.permissionsController = permissionsController;
     }
 
-    public String addStore(String ownerID,String name, String description) throws StoreException {
-        if(doesNameExists(name))
+    public String addStore(String founderId,String name, String description) throws StoreException {
+        if(doesNameExists(name)){
             throw new StoreException("Store name already exists");
-        Store toAdd = storeFactory.get(ownerID,name,description);
+        }
+        Store toAdd = storeFactory.get(founderId,name,description);
         repository.save(toAdd);
+        permissionsController.addPermission(founderId, toAdd.getStoreId(),StoreActions.ALL);
         return toAdd.getStoreId();
     }
 
@@ -118,12 +126,16 @@ public class StoresController {
         return repository.findById(storeId).orElseThrow(()->new StoreException("Store not found"));
     }
 
-    public List<StoreDetails> searchStoresGlobally(String keyword) {
+    public List<StoreDetails> searchStoresGlobally(String query) {
         List<StoreDetails> ret = new LinkedList<>();
-        List<String> split = List.of(keyword.split(" "));
         for (Store store : repository.findAll()){
+        List<String> split = List.of(query.split(" "));
             for (String key : split){
-                if (store.getDetails().getStoreName().contains(key)){
+                if (store.getStoreName().contains(key)){
+                    ret.add(store.getDetails());
+                    break;
+                }
+                if(store.getStoreDescription().contains(key)){
                     ret.add(store.getDetails());
                     break;
                 }
@@ -136,7 +148,11 @@ public class StoresController {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.findAllWithRatingAtLeast(request.storeRating())) {
             if (store.getStoreRating().ordinal() >= request.storeRating().ordinal()) {
-                ret.addAll(store.searchProduct(request.productSearchRequest()));
+                List<Product> products = store.searchProduct(request.productSearchRequest());
+                if(products == null || products.isEmpty()){
+                    continue;
+                }
+                ret.addAll(products);
             }
         }
         return ret;
