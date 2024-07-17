@@ -1,7 +1,6 @@
 package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
-import com.amazonas.common.dtos.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -22,4 +21,5 @@ public class ProductInventoryRepository {
         Set<String> products = new HashSet<>(productRepository.findAllProductIdsByStoreId(storeId));
         return Optional.of(new ProductInventory(productRepository, storeId, products));
     }
+
 }

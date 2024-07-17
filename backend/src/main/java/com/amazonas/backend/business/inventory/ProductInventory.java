@@ -5,7 +5,6 @@ import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
 
 import java.util.*;
 
@@ -41,6 +40,7 @@ public class ProductInventory {
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.getProductName(), product.getProductId());
         productRepository.save(product);
+        productIds.add(product.getProductId());
         return product.getProductId();
     }
 
@@ -63,7 +63,6 @@ public class ProductInventory {
             throw new StoreException("Product with id " + productId + " not found in inventory");
         }
         productRepository.deleteById(productId);
-        // remove id from productIds
         productIds.remove(productId);
         return true;
     }
@@ -76,6 +75,7 @@ public class ProductInventory {
         // get the product from the repository and change the quantity
         Product product = getProduct(productId);
         product.setQuantity(quantity);
+        productRepository.save(product);
     }
 
 
@@ -93,7 +93,9 @@ public class ProductInventory {
      */
     public boolean enableProduct(String productId) throws StoreException {
         Product product = getProduct(productId);
-        return product.enable();
+        boolean enable = product.enable();
+        productRepository.save(product);
+        return enable;
     }
 
     /**
@@ -101,7 +103,9 @@ public class ProductInventory {
      */
     public boolean disableProduct(String productId) throws StoreException {
         Product product = getProduct(productId);
-        return product.disable();
+        boolean disable = product.disable();
+        productRepository.save(product);
+        return disable;
     }
 
     /**

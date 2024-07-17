@@ -14,7 +14,6 @@ import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.backend.repository.DiscountManagerRepository;
 import com.amazonas.backend.repository.StoreDTO;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
@@ -677,11 +676,23 @@ public class Store {
         this.appointmentSystem = appointmentSystem;
     }
 
+    public void setDiscountManager(DiscountManager discountManager) {
+        this.discountManager = discountManager;
+    }
+
     public AppointmentSystem getAppointmentSystem() {
         return appointmentSystem;
     }
 
-    public void setDiscountManager(DiscountManager discountManager) {
-        this.discountManager = discountManager;
+    public ProductInventory getInventory() {
+        return inventory;
+    }
+
+    public DiscountManager getDiscountManager() {
+        return discountManager;
+    }
+
+    public PurchasePolicyManager getPurchasePolicyManager() {
+        return purchasePolicyManager;
     }
 }

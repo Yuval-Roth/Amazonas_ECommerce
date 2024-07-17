@@ -51,9 +51,13 @@ public class StoreRepository {
     }
 
     public void save(Store toAdd) {
-        //TODO: break this up into multiple saves
         storeDTORepository.save(new StoreDTO(toAdd.getStoreId(), toAdd.getStoreName(), toAdd.getStoreDescription(), toAdd.getStoreRating(), toAdd.isOpen()));
         apptSysRepo.save(toAdd.getAppointmentSystem());
+        discountRepository.save(toAdd.getDiscountManager());
+        //TODO: save purchase policy manager
+
+        // the product inventory is saved on the fly with every operation
+        // so we don't need to save it here
     }
 
     private Store storeFromDTO(StoreDTO dto) {
