@@ -2,7 +2,7 @@ package com.amazonas.backend.business.stores.factories;
 
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.repository.StoreRepository;
-import com.amazonas.backend.repository.StoreRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -13,7 +13,7 @@ public class StoreCallbackFactory {
 
     private final StoreRepository storeRepository;
 
-    public StoreCallbackFactory(StoreRepository storeRepository) {
+    public StoreCallbackFactory(@Lazy StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
     }
 
