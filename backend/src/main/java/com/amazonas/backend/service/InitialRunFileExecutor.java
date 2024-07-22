@@ -232,7 +232,8 @@ public class InitialRunFileExecutor {
                 try {
                     operation[1] = operation[1].toLowerCase();
                     AuthenticationRequest request = new AuthenticationRequest(operation[1], operation[2]);
-                    Response userAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(JsonUtils.serialize(request)), Response.class);
+                    Request request1 = new Request(this.currentUserId, this.token, JsonUtils.serialize(request));
+                    Response userAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(JsonUtils.serialize(request1)), Response.class);
                     if (!userAuthResponse.success()) {
                         return userAuthResponse.toJson();
                     }
