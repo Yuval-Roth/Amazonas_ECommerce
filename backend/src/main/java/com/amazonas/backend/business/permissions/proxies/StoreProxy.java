@@ -50,10 +50,10 @@ public class StoreProxy extends ControllerProxy {
         return real.closeStore(storeId);
     }
 
-    public void addProduct(String storeId, Product toAdd, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String addProduct(String storeId, Product toAdd, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.ADD_PRODUCT);
-        real.addProduct(storeId, toAdd);
+        return real.addProduct(storeId, toAdd);
     }
 
     public void updateProduct(String storeId, Product toUpdate, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {

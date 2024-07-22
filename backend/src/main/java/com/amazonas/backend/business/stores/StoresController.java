@@ -61,8 +61,8 @@ public class StoresController {
         return repository.storeNameExists(name);
     }
 
-    public void addProduct(String storeId,Product toAdd) throws StoreException {
-        getStore(storeId).addProduct(toAdd);
+    public String addProduct(String storeId,Product toAdd) throws StoreException {
+        return getStore(storeId).addProduct(toAdd);
     }
 
     public void updateProduct(String storeId,Product toUpdate) throws StoreException {
